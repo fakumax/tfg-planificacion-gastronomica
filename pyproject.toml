@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tfg-planificacion-gastronomica"
-version = "0.1.0"
+version = "0.2.0"
 description = "Pronóstico de ventas y planificación de insumos gastronómicos"
 readme = "README.md"
 requires-python = ">=3.12"
