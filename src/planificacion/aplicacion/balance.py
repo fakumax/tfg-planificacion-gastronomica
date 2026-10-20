@@ -16,10 +16,13 @@ class RegistroEjecuciones(Protocol):
 
 def ejecutar_balance(repo: RegistroEjecuciones, recetario: Recetario,
                       plan: tuple[CantidadPlanificada, ...], escenario: Escenario,
-                      fechas: tuple[date, ...], contexto: dict | None = None) -> dict:
+                      fechas: tuple[date, ...], contexto: dict | None = None,
+                      tipo: str = "balance") -> dict:
+    if tipo not in ("balance", "planificacion"):
+        raise ValueError("Tipo de ejecución de balance no admitido")
     resultado = calcular_balance(recetario, plan, escenario, fechas)
     contenido = normalizar({
-        "tipo": "balance", "version_codigo": __version__,
+        "tipo": tipo, "version_codigo": __version__,
         "contexto": contexto if contexto is not None else {"metodo": "plan_manual", "naturaleza_plan": "modelado"},
         "entradas": {"recetario": recetario, "plan": plan, "escenario": escenario, "fechas": fechas},
         "resultado": resultado,
