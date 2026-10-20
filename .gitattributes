@@ -2,3 +2,5 @@
 *.png binary
 *.jpg binary
 *.zip binary
+# Conservar el manifiesto recibido byte por byte, incluidos sus saltos CRLF.
+src/planificacion/recursos/manifiesto_fuentes.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
