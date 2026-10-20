@@ -15,6 +15,7 @@ from .. import __version__
 from ..aplicacion.experimento import configuracion_planificacion
 from ..aplicacion.planificacion import planificar
 from ..aplicacion.revisiones import recuperar_escenario
+from ..aplicacion.detalle import detallar_insumo
 from ..aplicacion.ventas import consultar_ventas
 from ..configuracion import recetario_configurado, recurso_json
 from ..dominio.balance import EntradaPrevista, Escenario, Existencia
@@ -61,6 +62,25 @@ def mostrar_resultado(registro):
                        for p in contexto["pronosticos"]])
         with st.expander("Saldos diarios", expanded=True):
             tabla(resultado["saldos"])
+        st.subheader('Detalle de consumo y alertas')
+        insumos = {i['insumo_id']: i['nombre'] for i in registro['entradas']['recetario']['insumos']}
+        con_alerta = {a['insumo_id'] for a in alertas}
+        orden = sorted(insumos, key=lambda i: (i not in con_alerta, insumos[i]))
+        elegido = st.selectbox('Insumo para consultar', orden, key=f"detalle_{registro['ejecucion_id']}",
+            format_func=lambda i: f"{insumos[i]} · faltante" if i in con_alerta else insumos[i])
+        detalle = detallar_insumo(registro, elegido)
+        if detalle['alerta']:
+            st.write(f"Primera insuficiencia: {detalle['alerta']['primera_fecha']} · "
+                     f"Déficit: {detalle['alerta']['deficit_inicial']} {detalle['alerta']['unidad']}")
+            st.caption('Días con saldo negativo: ' + ', '.join(detalle['dias_deficit']))
+        elif not detalle['insumo']['control_stock']:
+            st.info('Este insumo tiene consumo calculado y saldo no aplicable porque no controla stock.')
+        tabla(detalle['balance'])
+        if detalle['entradas']:
+            st.write('Reposiciones previstas del insumo')
+            tabla(detalle['entradas'])
+        st.write('Aportes de consumo por producto y componente')
+        tabla(detalle['aportes'])
         with st.expander("Consumos y procedencia"):
             tabla(resultado["consumos"])
             st.json(registro["entradas"])

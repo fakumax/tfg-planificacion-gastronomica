@@ -55,6 +55,8 @@ class InterfazTests(unittest.TestCase):
         self.assertEqual(len(ejecuciones), 1)
         resultado = SQLiteEjecuciones(self.base).recuperar(ejecuciones[0]["id"])
         self.assertEqual(len(resultado["entradas"]["plan"]), 49)
+        app.selectbox(key=f"detalle_{resultado['ejecucion_id']}").set_value('agua').run()
+        self.assertTrue(any('saldo no aplicable' in i.value for i in app.info))
         app.date_input(key="origen").set_value(__import__('datetime').date(2025, 10, 31)).run()
         app.button(key="planificar").click().run()
         self.assertTrue(app.error)
