@@ -14,11 +14,12 @@ import streamlit as st
 from .. import __version__
 from ..aplicacion.experimento import configuracion_planificacion
 from ..aplicacion.planificacion import planificar
+from ..aplicacion.revisiones import recuperar_escenario
 from ..aplicacion.ventas import consultar_ventas
 from ..configuracion import recetario_configurado, recurso_json
 from ..dominio.balance import EntradaPrevista, Escenario, Existencia
 from ..dominio.pronosticos import Persistencia, ReferenciaSemanal
-from ..dominio.recetas import decimal_no_negativo
+from ..dominio.recetas import decimal_no_negativo, texto
 from ..dominio.serializacion import convertir, normalizar
 from ..infraestructura.catalogo_base import estado_base
 from ..infraestructura.csv_ventas import preparar_ventas
@@ -42,6 +43,8 @@ def mostrar_resultado(registro):
     st.subheader("Ejecución guardada")
     contexto = registro.get("contexto", {})
     st.caption(f"{registro['fecha_utc']} · {registro['ejecucion_id']}")
+    if contexto.get('revision'):
+        st.caption(f"Revisión de la ejecución {contexto['revision']['ejecucion_previa_id']}")
     if registro["tipo"] in ("balance", "planificacion"):
         resultado = registro["resultado"]
         st.write(f"Método: {contexto.get('metodo', 'plan manual')} · Origen: {contexto.get('origen', 'plan modelado')}")
@@ -130,27 +133,48 @@ def planificacion(base, identidad, ejecuciones):
     st.caption("Siete días desde el origen elegido. Las existencias y entradas pertenecen a un escenario sintético.")
     recetario = recetario_configurado()
     controlados = {i.insumo_id: i for i in recetario.insumos if i.control_stock}
-    origen = st.date_input("Origen del pronóstico", date(2025, 11, 1), key="origen")
+    candidatas = []
+    for e in reversed(ejecuciones):
+        if e['tipo'] == 'planificacion':
+            r = SQLiteEjecuciones(base).recuperar(e['id'])
+            if (r['contexto'].get('importacion_id') == identidad
+                    and r['entradas']['recetario'] == normalizar(recetario)):
+                candidatas.append(e['id'])
+    previa = st.selectbox('Escenario de partida', [None, *candidatas], key='revision',
+        format_func=lambda i: 'Escenario nuevo' if i is None else f'Revisar {i[:12]}')
+    borrador = recuperar_escenario(SQLiteEjecuciones(base), previa) if previa else None
+    if st.session_state.get('edicion_escenario') != (str(base), previa):
+        st.session_state['edicion_escenario'] = (str(base), previa)
+        st.session_state['origen'] = (date.fromisoformat(SQLiteEjecuciones(base).recuperar(previa)['contexto']['origen'])
+                                      if previa else date(2025, 11, 1))
+    origen = st.date_input("Origen del pronóstico", key="origen", disabled=bool(previa))
     nombre_metodo = st.selectbox("Método", ["Persistencia", "Referencia semanal", "Random Forest"], key="metodo")
     selecciones = [r["id"] for r in reversed(ejecuciones) if r["tipo"] == "seleccion_modelos"]
     seleccion = st.selectbox("Selección cerrada", selecciones) if nombre_metodo == "Random Forest" and selecciones else None
     if nombre_metodo == "Random Forest" and not seleccion:
         st.info("Primero completá la selección por validación indicada en el manual de evaluación.")
-    nombre = st.text_input("Nombre del escenario", "Escenario de demostración")
-    version = st.text_input("Versión del escenario", "1")
+    sufijo = previa or 'nuevo'
+    nombre = st.text_input("Nombre del escenario", borrador.nombre if borrador else "Escenario de demostración", key=f'nombre_{sufijo}')
+    version = st.text_input("Versión del escenario", f'{borrador.version}.1' if borrador else "1", key=f'version_{sufijo}')
+    existencias_previas = {e.insumo_id: e.cantidad for e in borrador.existencias} if borrador else {}
     st.subheader("Existencias iniciales")
     stock = st.data_editor(pd.DataFrame([{"insumo_id": i.insumo_id, "insumo": i.nombre,
-        "cantidad": 0.0, "unidad": i.unidad} for i in controlados.values()]), key="stock",
+        "cantidad": float(existencias_previas.get(i.insumo_id, 0)), "unidad": i.unidad} for i in controlados.values()]), key=f"stock_{sufijo}",
         disabled=["insumo_id", "insumo", "unidad"], hide_index=True, width="stretch",
         column_config={"cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0)})
     st.subheader("Entradas previstas")
-    entradas = st.data_editor(pd.DataFrame({"insumo_id": pd.Series(dtype=str),
-        "fecha": pd.Series(dtype="datetime64[ns]"), "cantidad": pd.Series(dtype=float)}),
-        key="entradas", num_rows="dynamic", hide_index=True, width="stretch",
-        column_config={"insumo_id": st.column_config.SelectboxColumn("Insumo", options=list(controlados), required=True),
+    filas_previas = [{'entrada_id': e.entrada_id, 'insumo_id': e.insumo_id,
+                      'fecha': pd.Timestamp(e.fecha), 'cantidad': float(e.cantidad)} for e in borrador.entradas] if borrador else []
+    entradas_iniciales = pd.DataFrame(filas_previas) if filas_previas else pd.DataFrame({
+        'entrada_id': pd.Series(dtype=str), "insumo_id": pd.Series(dtype=str),
+        "fecha": pd.Series(dtype="datetime64[ns]"), "cantidad": pd.Series(dtype=float)})
+    entradas = st.data_editor(entradas_iniciales,
+        key=f"entradas_{sufijo}", num_rows="dynamic", hide_index=True, width="stretch",
+        column_config={'entrada_id': st.column_config.TextColumn('ID de reposición', required=True),
+                       "insumo_id": st.column_config.SelectboxColumn("Insumo", options=list(controlados), required=True),
                        "fecha": st.column_config.DateColumn("Fecha", required=True),
                        "cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0, required=True)})
-    st.caption("Usá la unidad de cada insumo. Las entradas se suman antes del consumo del mismo día.")
+    st.caption("Usá un ID distinto para cada entrega y la unidad de cada insumo. Las entradas se suman antes del consumo del mismo día.")
     if st.button("Calcular y guardar", key="planificar", type="primary"):
         existencias = tuple(Existencia(r["insumo_id"], decimal_no_negativo(r["cantidad"], "existencia"), r["unidad"])
                             for r in stock.to_dict("records"))
@@ -160,7 +184,8 @@ def planificacion(base, identidad, ejecuciones):
                 raise ValueError("Cada entrada requiere un insumo y una fecha válidos")
             fecha = pd.Timestamp(r["fecha"]).date()
             reposiciones.append(EntradaPrevista(r["insumo_id"], fecha, decimal_no_negativo(r["cantidad"], "entrada"),
-                                                controlados[r["insumo_id"]].unidad))
+                                                controlados[r["insumo_id"]].unidad,
+                                                texto(r['entrada_id'], 'identificador de reposición')))
         escenario = Escenario(nombre, version, existencias, tuple(reposiciones))
         referencia = None
         metodo = Persistencia() if nombre_metodo == "Persistencia" else ReferenciaSemanal()
@@ -173,8 +198,9 @@ def planificacion(base, identidad, ejecuciones):
             metodo = RandomForest(configs, estados)
         with st.spinner("Calculando el plan completo…"):
             resultado = planificar(SQLiteVentas(base), SQLiteEjecuciones(base), metodo, recetario,
-                identidad, origen, escenario, referencia_seleccion=referencia)
+                identidad, origen, escenario, referencia_seleccion=referencia, ejecucion_previa_id=previa)
         st.session_state["ultimo_plan"] = {"base": str(base), "id": resultado["ejecucion_id"]}
+        st.rerun()
     ultimo = st.session_state.get("ultimo_plan", {})
     if ultimo.get("base") == str(base):
         mostrar_resultado(SQLiteEjecuciones(base).recuperar(ultimo["id"]))

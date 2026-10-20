@@ -70,6 +70,22 @@ class InterfazTests(unittest.TestCase):
         self.assertTrue(app.error)
         self.assertFalse(self.base.exists())
 
+    def test_recupera_escenario_editable_y_guarda_revision_vinculada(self):
+        importacion_sintetica(self.raiz)
+        app = self.app()
+        app.radio(key='pagina').set_value('Planificación').run()
+        app.button(key='planificar').click().run()
+        original = SQLiteEjecuciones(self.base).listar()[0]['id']
+        app.selectbox(key='revision').set_value(original).run()
+        self.assertTrue(app.date_input(key='origen').disabled)
+        app.button(key='planificar').click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        filas = SQLiteEjecuciones(self.base).listar()
+        self.assertEqual(len(filas), 2)
+        segunda = SQLiteEjecuciones(self.base).recuperar(filas[-1]['id'])
+        self.assertEqual(segunda['contexto']['revision']['ejecucion_previa_id'], original)
+
     def test_un_proceso_de_modelos_no_arranca_la_pantalla(self):
         with patch("planificacion.presentacion.web.mostrar_app") as mostrar:
             runpy.run_path(str(APP), run_name="__mp_main__")

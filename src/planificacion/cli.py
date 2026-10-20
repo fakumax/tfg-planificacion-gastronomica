@@ -80,6 +80,7 @@ def main(argv: list[str] | None = None) -> int:
     balance.add_argument("--plan", type=Path, required=True)
     balance.add_argument("--escenario", type=Path, required=True)
     balance.add_argument("--recetario", type=Path)
+    balance.add_argument("--previa", help="Ejecución anterior del mismo escenario y horizonte")
     ejecuciones = comandos.add_parser("listar-ejecuciones", help="Listar balances y consultas conservados")
     ejecuciones.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
     ejecucion = comandos.add_parser("ver-ejecucion", help="Recuperar entradas y resultados de una ejecución")
@@ -93,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
     planificacion.add_argument("--seleccion", help="Selección cerrada requerida por Random Forest")
     planificacion.add_argument("--escenario", type=Path, required=True)
     planificacion.add_argument("--recetario", type=Path)
+    planificacion.add_argument("--previa", help="Ejecución anterior del mismo escenario y horizonte")
     for nombre, ayuda in (("seleccionar-modelos", "Conservar la selección por validación"),
                           ("evaluar-modelos", "Comparar con una selección cerrada previamente")):
         experimento = comandos.add_parser(nombre, help=ayuda)
@@ -163,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             recetario = recetario_configurado(args.recetario)
             plan, fechas = leer_plan(args.plan)
             salida = ejecutar_balance(SQLiteEjecuciones(args.base), recetario, plan,
-                                       leer_escenario(args.escenario), fechas)
+                                       leer_escenario(args.escenario), fechas, ejecucion_previa_id=args.previa)
         elif args.comando == "listar-ejecuciones":
             salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
         elif args.comando == "planificar":
@@ -179,7 +181,8 @@ def main(argv: list[str] | None = None) -> int:
                 metodo = RandomForest(configuraciones, estados)
             salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
                                  recetario_configurado(args.recetario), args.importacion, args.origen,
-                                 leer_escenario(args.escenario), referencia_seleccion=referencia)
+                                 leer_escenario(args.escenario), referencia_seleccion=referencia,
+                                 ejecucion_previa_id=args.previa)
         elif args.comando in ("seleccionar-modelos", "evaluar-modelos"):
             opciones = {"ventas": SQLiteVentas(args.base), "registro": SQLiteEjecuciones(args.base),
                        "importacion_id": args.importacion, "protocolo": recurso_json("protocolo_tp3_v1.json"),

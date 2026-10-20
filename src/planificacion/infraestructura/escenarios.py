@@ -48,6 +48,8 @@ def leer_escenario(ruta: Path) -> Escenario:
                                   texto(e.get("unidad"), "unidad")) for e in _filas(datos, "existencias"))
     entradas = tuple(EntradaPrevista(texto(e.get("insumo_id"), "insumo"), fecha_iso(e.get("fecha")),
                                     decimal_no_negativo(e.get("cantidad"), "entrada"),
-                                    texto(e.get("unidad"), "unidad")) for e in _filas(datos, "entradas"))
+                                    texto(e.get("unidad"), "unidad"),
+                                    texto(e.get("entrada_id", f"legado-{n}"), "identificador de reposición"))
+                     for n, e in enumerate(_filas(datos, "entradas"), 1))
     return Escenario(texto(datos.get("nombre"), "nombre del escenario"),
                       texto(datos.get("version"), "versión del escenario"), existencias, entradas)

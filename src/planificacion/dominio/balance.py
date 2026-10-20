@@ -2,9 +2,10 @@
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from decimal import Decimal
+from uuid import uuid4
 
 from .recetas import Recetario, calcular_consumos, decimal_no_negativo, texto
 
@@ -29,6 +30,7 @@ class EntradaPrevista:
     fecha: date
     cantidad: Decimal
     unidad: str
+    entrada_id: str = field(default_factory=lambda: uuid4().hex)
 
 
 @dataclass(frozen=True)
@@ -112,8 +114,12 @@ def calcular_balance(recetario: Recetario, plan: tuple[CantidadPlanificada, ...]
         stock[e.insumo_id] = decimal_no_negativo(e.cantidad, "existencia inicial")
     if set(stock) != set(controlados):
         raise ValueError("Faltan existencias iniciales explícitas de insumos controlados")
-    entradas = {}
+    entradas, identidades = {}, set()
     for e in escenario.entradas:
+        texto(e.entrada_id, "identificador de reposición")
+        if e.entrada_id in identidades:
+            raise ValueError("Entrada con identificador de reposición duplicado")
+        identidades.add(e.entrada_id)
         if (e.insumo_id not in controlados or e.fecha not in fechas
                 or e.unidad != controlados[e.insumo_id].unidad):
             raise ValueError("Entrada con insumo, unidad o fecha fuera del escenario")

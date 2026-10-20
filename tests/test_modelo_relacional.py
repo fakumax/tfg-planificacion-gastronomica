@@ -82,4 +82,3 @@ class ModeloRelacionalTests(unittest.TestCase):
             c.execute("UPDATE BalanceDiario SET saldo_final='10' WHERE saldo_final IS NOT NULL")
         with self.assertRaisesRegex(ValueError, 'integridad relacional'):
             verificar_base(self.base)
-

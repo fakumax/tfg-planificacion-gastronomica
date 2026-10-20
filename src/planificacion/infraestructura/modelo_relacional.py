@@ -329,4 +329,3 @@ def verificar_modelo(c):
             consulta = f'SELECT * FROM {nombre} ORDER BY {orden}'
             if [tuple(r) for r in c.execute(consulta)] != [tuple(r) for r in esperado.execute(consulta)]:
                 raise ValueError(f'La integridad relacional de {nombre} difiere de las instantáneas')
-
