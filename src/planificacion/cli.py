@@ -27,6 +27,7 @@ from .infraestructura.random_forest import RandomForest
 from .infraestructura.entorno import capturar_codigo, capturar_entorno
 from .infraestructura.motor_experimento import ejecutar_tareas
 from .infraestructura.exportacion import exportar_evaluacion
+from .infraestructura.respaldos import copiar_base, restaurar_base
 
 
 def informar_progreso(producto: str, completados: int, total: int) -> None:
@@ -103,6 +104,12 @@ def main(argv: list[str] | None = None) -> int:
     exportar.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
     exportar.add_argument("--ejecucion", required=True)
     exportar.add_argument("--directorio", type=Path, required=True)
+    respaldo = comandos.add_parser("respaldar-base", help="Crear una copia consistente en un destino nuevo")
+    respaldo.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    respaldo.add_argument("--destino", type=Path, required=True)
+    restaurar = comandos.add_parser("restaurar-base", help="Restaurar una copia en otra base nueva")
+    restaurar.add_argument("--copia", type=Path, required=True)
+    restaurar.add_argument("--destino", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -180,6 +187,10 @@ def main(argv: list[str] | None = None) -> int:
                 salida = resumen_experimento(ejecutar_prueba(**opciones, seleccion_id=args.seleccion))
         elif args.comando == "exportar-evaluacion":
             salida = exportar_evaluacion(SQLiteEjecuciones(args.base), args.ejecucion, args.directorio)
+        elif args.comando == "respaldar-base":
+            salida = copiar_base(args.base, args.destino)
+        elif args.comando == "restaurar-base":
+            salida = restaurar_base(args.copia, args.destino)
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
