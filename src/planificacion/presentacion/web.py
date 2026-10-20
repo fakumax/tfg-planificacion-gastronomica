@@ -1,0 +1,251 @@
+"""Interfaz local; las reglas y escrituras se delegan a los servicios comprobados."""
+
+import json
+import os
+import sqlite3
+from dataclasses import asdict
+from datetime import date, datetime
+from decimal import Decimal
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+from .. import __version__
+from ..aplicacion.experimento import configuracion_planificacion
+from ..aplicacion.planificacion import planificar
+from ..aplicacion.ventas import consultar_ventas
+from ..configuracion import recetario_configurado, recurso_json
+from ..dominio.balance import EntradaPrevista, Escenario, Existencia
+from ..dominio.pronosticos import Persistencia, ReferenciaSemanal
+from ..dominio.recetas import decimal_no_negativo
+from ..dominio.serializacion import convertir, normalizar
+from ..infraestructura.catalogo_base import estado_base
+from ..infraestructura.csv_ventas import preparar_ventas
+from ..infraestructura.entorno import capturar_codigo, capturar_entorno
+from ..infraestructura.random_forest import RandomForest
+from ..infraestructura.respaldos import copiar_base, restaurar_base
+from ..infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
+from ..infraestructura.sqlite_ventas import SQLiteVentas
+
+
+def tabla(filas):
+    st.dataframe(pd.DataFrame(normalizar(filas)), hide_index=True, width="stretch")
+
+
+def descargar(registro):
+    st.download_button("Descargar ejecución completa", json.dumps(registro, ensure_ascii=False,
+        indent=2, default=convertir), file_name=f"ejecucion_{registro['ejecucion_id']}.json", mime="application/json")
+
+
+def mostrar_resultado(registro):
+    st.subheader("Ejecución guardada")
+    contexto = registro.get("contexto", {})
+    st.caption(f"{registro['fecha_utc']} · {registro['ejecucion_id']}")
+    if registro["tipo"] in ("balance", "planificacion"):
+        resultado = registro["resultado"]
+        st.write(f"Método: {contexto.get('metodo', 'plan manual')} · Origen: {contexto.get('origen', 'plan modelado')}")
+        st.caption("Recetas modeladas · Existencias y entradas sintéticas")
+        alertas = resultado["alertas"]
+        if alertas:
+            st.warning(f"Se detectaron faltantes en {len(alertas)} insumos. Una entrada posterior no borra el déficit previo.")
+            tabla(alertas)
+        else:
+            st.success("El escenario no presenta saldos negativos.")
+        if contexto.get("pronosticos"):
+            with st.expander("Cantidades previstas por producto", expanded=True):
+                tabla([{k: p[k] for k in ("producto_id", "fecha", "horizonte", "cantidad", "metodo")}
+                       for p in contexto["pronosticos"]])
+        with st.expander("Saldos diarios", expanded=True):
+            tabla(resultado["saldos"])
+        with st.expander("Consumos y procedencia"):
+            tabla(resultado["consumos"])
+            st.json(registro["entradas"])
+    elif registro["tipo"] == "seleccion_modelos":
+        tabla([{k: p[k] for k in ("producto_id", "estado", "parametros", "cobertura_validacion")}
+               for p in registro["resultado"]["productos"]])
+    else:
+        tabla([m for p in registro["resultado"]["productos"] for m in p["metricas"]])
+    descargar(registro)
+
+
+def inicio(base, importaciones, ejecuciones):
+    st.title("Planificación gastronómica")
+    st.write("Consultá ventas y prepará un escenario de insumos para los próximos siete días.")
+    a, b, c = st.columns(3)
+    a.metric("Importaciones", len(importaciones))
+    b.metric("Ejecuciones guardadas", len(ejecuciones))
+    c.metric("Horizonte", "7 días")
+    st.info("Las ventas son observadas. Las recetas son modeladas y el inventario del escenario es sintético.")
+    st.subheader("Cargar ventas")
+    st.caption("Elegí la carpeta local de originales. Se comprueba la colección completa antes de guardar.")
+    carpeta = st.text_input("Carpeta de originales", "datos/originales", key="originales")
+    if st.button("Validar e importar", key="importar", type="primary"):
+        with st.spinner("Validando los archivos originales…"):
+            lote = preparar_ventas(Path(carpeta), recurso_json("manifiesto_fuentes.json"), recurso_json("protocolo_tp3_v1.json"))
+            identidad = SQLiteVentas(base).guardar(lote)
+        st.success(f"Importación completa: {identidad}")
+        st.caption("La misma entrada no se duplica. Elegila en la barra lateral al cambiar de pantalla.")
+
+
+def ventas(base, identidad):
+    st.title("Ventas")
+    productos = SQLiteVentas(base).listar_productos(identidad)
+    producto = st.selectbox("Producto", productos, format_func=lambda p: f"{p.producto_id} · {p.nombre_modelado}")
+    st.caption(f"Identidad original: {producto.producto_original} · {producto.local_original}")
+    with st.form("consulta"):
+        a, b = st.columns(2)
+        desde = a.date_input("Desde", date(producto.anio, 11, 1), key="desde")
+        hasta = b.date_input("Hasta", date(producto.anio, 11, 7), key="hasta")
+        consultar = st.form_submit_button("Consultar", key="consultar", type="primary")
+    if consultar:
+        consulta = consultar_ventas(SQLiteVentas(base), identidad, producto.producto_id, desde, hasta)
+        a, b, c = st.columns(3)
+        a.metric("Días observados", consulta.dias_observados)
+        b.metric("Días sin fila", consulta.dias_sin_fila)
+        c.metric("Total observado" + (" · parcial" if consulta.incompleta else ""),
+                 consulta.total_observado if consulta.total_observado is not None else "Sin datos")
+        tabla([{"fecha": d.fecha, "cantidad": d.cantidad,
+                "estado": "Observado" if d.cantidad is not None else "Sin fila"} for d in consulta.diarias])
+        if consulta.incompleta:
+            st.warning("El período está incompleto. Una fecha sin fila no representa una venta de cero.")
+        with st.expander("Fuentes de la consulta"):
+            st.json(normalizar(consulta.fuentes))
+
+
+def recetas():
+    st.title("Recetas")
+    recetario = recetario_configurado()
+    st.caption(f"Composición modelada para el escenario · Versión {recetario.version}")
+    receta = st.selectbox("Ficha", recetario.recetas, format_func=lambda r: r.producto_id)
+    nombres = {i.insumo_id: i for i in recetario.insumos}
+    st.write(f"Rendimiento: {receta.rendimiento} unidad(es)")
+    tabla([{**asdict(l), "insumo": nombres[l.insumo_id].nombre,
+            "control_de_stock": nombres[l.insumo_id].control_stock} for l in receta.lineas])
+    st.caption("Estas cantidades no son recetas observadas del establecimiento de origen de las ventas.")
+
+
+def planificacion(base, identidad, ejecuciones):
+    st.title("Planificación")
+    st.caption("Siete días desde el origen elegido. Las existencias y entradas pertenecen a un escenario sintético.")
+    recetario = recetario_configurado()
+    controlados = {i.insumo_id: i for i in recetario.insumos if i.control_stock}
+    origen = st.date_input("Origen del pronóstico", date(2025, 11, 1), key="origen")
+    nombre_metodo = st.selectbox("Método", ["Persistencia", "Referencia semanal", "Random Forest"], key="metodo")
+    selecciones = [r["id"] for r in reversed(ejecuciones) if r["tipo"] == "seleccion_modelos"]
+    seleccion = st.selectbox("Selección cerrada", selecciones) if nombre_metodo == "Random Forest" and selecciones else None
+    if nombre_metodo == "Random Forest" and not seleccion:
+        st.info("Primero completá la selección por validación indicada en el manual de evaluación.")
+    nombre = st.text_input("Nombre del escenario", "Escenario de demostración")
+    version = st.text_input("Versión del escenario", "1")
+    st.subheader("Existencias iniciales")
+    stock = st.data_editor(pd.DataFrame([{"insumo_id": i.insumo_id, "insumo": i.nombre,
+        "cantidad": 0.0, "unidad": i.unidad} for i in controlados.values()]), key="stock",
+        disabled=["insumo_id", "insumo", "unidad"], hide_index=True, width="stretch",
+        column_config={"cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0)})
+    st.subheader("Entradas previstas")
+    entradas = st.data_editor(pd.DataFrame({"insumo_id": pd.Series(dtype=str),
+        "fecha": pd.Series(dtype="datetime64[ns]"), "cantidad": pd.Series(dtype=float)}),
+        key="entradas", num_rows="dynamic", hide_index=True, width="stretch",
+        column_config={"insumo_id": st.column_config.SelectboxColumn("Insumo", options=list(controlados), required=True),
+                       "fecha": st.column_config.DateColumn("Fecha", required=True),
+                       "cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0, required=True)})
+    st.caption("Usá la unidad de cada insumo. Las entradas se suman antes del consumo del mismo día.")
+    if st.button("Calcular y guardar", key="planificar", type="primary"):
+        existencias = tuple(Existencia(r["insumo_id"], decimal_no_negativo(r["cantidad"], "existencia"), r["unidad"])
+                            for r in stock.to_dict("records"))
+        reposiciones = []
+        for r in entradas.to_dict("records"):
+            if r["insumo_id"] not in controlados or pd.isna(r["fecha"]):
+                raise ValueError("Cada entrada requiere un insumo y una fecha válidos")
+            fecha = pd.Timestamp(r["fecha"]).date()
+            reposiciones.append(EntradaPrevista(r["insumo_id"], fecha, decimal_no_negativo(r["cantidad"], "entrada"),
+                                                controlados[r["insumo_id"]].unidad))
+        escenario = Escenario(nombre, version, existencias, tuple(reposiciones))
+        referencia = None
+        metodo = Persistencia() if nombre_metodo == "Persistencia" else ReferenciaSemanal()
+        if nombre_metodo == "Random Forest":
+            if not seleccion:
+                raise ValueError("Falta una selección cerrada para Random Forest")
+            configs, estados, referencia = configuracion_planificacion(SQLiteVentas(base), SQLiteEjecuciones(base),
+                identidad, seleccion, recurso_json("protocolo_tp3_v1.json"), origen,
+                {"entorno": capturar_entorno(), "codigo": capturar_codigo()})
+            metodo = RandomForest(configs, estados)
+        with st.spinner("Calculando el plan completo…"):
+            resultado = planificar(SQLiteVentas(base), SQLiteEjecuciones(base), metodo, recetario,
+                identidad, origen, escenario, referencia_seleccion=referencia)
+        st.session_state["ultimo_plan"] = {"base": str(base), "id": resultado["ejecucion_id"]}
+    ultimo = st.session_state.get("ultimo_plan", {})
+    if ultimo.get("base") == str(base):
+        mostrar_resultado(SQLiteEjecuciones(base).recuperar(ultimo["id"]))
+
+
+def historial(base, ejecuciones):
+    st.title("Historial")
+    if not ejecuciones:
+        st.info("Todavía no hay ejecuciones guardadas.")
+        return
+    por_id = {r["id"]: r for r in ejecuciones}
+    identidad = st.selectbox("Ejecución", list(reversed(por_id)),
+        format_func=lambda i: f"{por_id[i]['fecha_utc']} · {por_id[i]['tipo']} · {i[:10]}")
+    mostrar_resultado(SQLiteEjecuciones(base).recuperar(identidad))
+
+
+def evaluacion(base, ejecuciones):
+    st.title("Evaluación predictiva")
+    ids = [r["id"] for r in reversed(ejecuciones) if r["tipo"] == "evaluacion_predictiva"]
+    if not ids:
+        st.info("Todavía no hay una evaluación terminada. Seguí el manual de evaluación para ejecutarla.")
+        return
+    identidad = st.selectbox("Evaluación guardada", ids)
+    registro = SQLiteEjecuciones(base).recuperar(identidad)
+    productos = {p["producto_id"]: p for p in registro["resultado"]["productos"]}
+    pid = st.selectbox("Producto", list(productos))
+    producto = productos[pid]
+    st.write("Configuración:", producto["estado_configuracion"])
+    st.caption("Menor error es mejor. La precisión no demuestra ahorro ni beneficios operativos.")
+    tabla(producto["metricas"])
+    if any(m["exploratoria"] for m in producto["metricas"]):
+        st.warning("Algunos horizontes tienen menos de 14 orígenes; su comparación es exploratoria.")
+    with st.expander("Sensibilidad sin solapamiento"):
+        tabla(producto["sensibilidad"])
+        if producto["bloques_p07"] is not None:
+            st.json(producto["bloques_p07"])
+        st.caption("Estas ventanas no acreditan independencia estadística.")
+    descargar(registro)
+
+
+def copias(base):
+    st.title("Copias y recuperación")
+    st.write("Creá una copia consistente o restaurala en una base nueva. Conservá juntos el archivo y su manifiesto.")
+    destino = st.text_input("Destino de copia nuevo", f"respaldos/copia_{datetime.now():%Y%m%d_%H%M%S}.sqlite3", key="copia_destino")
+    if st.button("Crear copia", key="copiar"):
+        st.success(f"Copia comprobada: {copiar_base(base, Path(destino))}")
+    copia = st.text_input("Copia para restaurar", key="copia_origen")
+    nuevo = st.text_input("Destino nuevo de restauración", "datos/restaurada.sqlite3", key="restaurar_destino")
+    if st.button("Restaurar en otra base", key="restaurar"):
+        restaurar_base(Path(copia), Path(nuevo))
+        st.success("Restauración comprobada. Elegí su ruta en la barra lateral para consultarla.")
+
+
+def mostrar_app():
+    st.set_page_config(page_title="Planificación gastronómica", page_icon="🍽️", layout="wide")
+    st.sidebar.title("Planificación")
+    st.sidebar.caption(f"Prototipo local · {__version__}")
+    pagina = st.sidebar.radio("Sección", ["Inicio", "Ventas", "Recetas", "Planificación", "Historial", "Evaluación", "Copias"], key="pagina")
+    with st.sidebar.expander("Configuración local"):
+        base = Path(st.text_input("Base de datos", os.environ.get("TFG_BASE", "datos/prototipo.sqlite3"), key="base")).resolve()
+    try:
+        importaciones, ejecuciones = estado_base(base)
+        identidad = st.sidebar.selectbox("Importación activa", [r["id"] for r in importaciones],
+                                         format_func=lambda i: i[:12]) if importaciones else None
+        if pagina == "Inicio": inicio(base, importaciones, ejecuciones)
+        elif pagina == "Recetas": recetas()
+        elif pagina == "Historial": historial(base, ejecuciones)
+        elif pagina == "Evaluación": evaluacion(base, ejecuciones)
+        elif pagina == "Copias": copias(base)
+        elif not identidad: st.info("Primero cargá los originales desde Inicio o elegí una base que ya tenga una importación.")
+        elif pagina == "Ventas": ventas(base, identidad)
+        else: planificacion(base, identidad, ejecuciones)
+    except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
+        st.error(f"No se completó la operación: {exc}")

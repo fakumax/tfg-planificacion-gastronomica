@@ -119,8 +119,9 @@ def main(argv: list[str] | None = None) -> int:
                 "implementado": ["verificación de originales en modo lectura",
                                  "preparación diaria", "importación SQLite", "consulta histórica",
                                  "recetario versionado", "balance y alertas", "historial de ejecuciones",
-                                 "planificación integrada con persistencia"],
-                "pendiente": ["interfaz", "experimento real y evidencia de cierre"],
+                                 "planificación con métodos identificados", "selección y evaluación predictiva",
+                                 "exportación de evidencia", "interfaz local", "copias y restauración"],
+                "pendiente": ["verificación de instalación limpia", "publicación y entrega académica"],
                 "protocolo": recurso_json("protocolo_tp3_v1.json"),
             }
         elif args.comando == "verificar-entradas":
