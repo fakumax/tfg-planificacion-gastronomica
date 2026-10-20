@@ -1,7 +1,7 @@
 """Modelo del TP3 y actualización transaccional desde los registros originales.
 
 Las seis tablas anteriores se conservan como registro de importación y de
-instantáneas firmadas. Las dieciocho entidades del diseño tienen tablas propias;
+instantáneas con huellas. Las dieciocho entidades del diseño tienen tablas propias;
 Alerta se deriva de BalanceDiario. No se reescribe una ejecución histórica.
 """
 

@@ -34,7 +34,8 @@ from ..infraestructura.sqlite_ventas import SQLiteVentas
 
 
 def tabla(filas):
-    st.dataframe(pd.DataFrame(normalizar(filas)), hide_index=True, width="stretch")
+    datos = json.loads(json.dumps(filas, default=convertir, ensure_ascii=False, allow_nan=False))
+    st.dataframe(pd.DataFrame(datos), hide_index=True, width="stretch")
 
 
 def descargar(registro):

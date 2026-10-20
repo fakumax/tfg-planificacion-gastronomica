@@ -8,8 +8,9 @@ def preparar_grafico(filas):
     datos = pd.DataFrame(filas)
     datos['fecha'] = pd.to_datetime(datos['fecha'])
     return alt.Chart(datos).mark_line(point=True, invalid='break-paths-show-domains').encode(
-        x=alt.X('fecha:T', title='Fecha'), y=alt.Y('cantidad:Q', title='Unidades observadas'),
-        tooltip=[alt.Tooltip('fecha:T', title='Fecha'), alt.Tooltip('cantidad:Q', title='Unidades')])
+        x=alt.X('fecha:T', title='Fecha', axis=alt.Axis(format='%d/%m')),
+        y=alt.Y('cantidad:Q', title='Unidades observadas'),
+        tooltip=[alt.Tooltip('fecha:T', title='Fecha', format='%d/%m/%Y'), alt.Tooltip('cantidad:Q', title='Unidades')])
 
 
 def explicar_metricas(producto):
