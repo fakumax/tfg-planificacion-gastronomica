@@ -12,6 +12,7 @@ from pathlib import Path
 from . import __version__
 from .entradas import verificar_entradas
 from .aplicacion.ventas import consultar_ventas
+from .aplicacion.pronosticos import consultar_pronostico, consultar_disponibilidad
 from .infraestructura.csv_ventas import preparar_ventas
 from .infraestructura.sqlite_ventas import SQLiteVentas
 from .aplicacion.balance import ejecutar_balance
@@ -95,6 +96,15 @@ def main(argv: list[str] | None = None) -> int:
     planificacion.add_argument("--escenario", type=Path, required=True)
     planificacion.add_argument("--recetario", type=Path)
     planificacion.add_argument("--previa", help="Ejecución anterior del mismo escenario y horizonte")
+    for nombre in ('pronosticar-producto', 'consultar-disponibilidad'):
+        individual = comandos.add_parser(nombre, help='Consultar un producto sin exigir un balance completo')
+        individual.add_argument('--base', type=Path, default=Path('datos/prototipo.sqlite3'))
+        individual.add_argument('--importacion', required=True)
+        individual.add_argument('--producto', required=True)
+        individual.add_argument('--origen', type=fecha_argumento, required=True)
+        if nombre == 'pronosticar-producto':
+            individual.add_argument('--metodo', choices=['persistencia','semanal','random_forest'], default='persistencia')
+            individual.add_argument('--seleccion')
     for nombre, ayuda in (("seleccionar-modelos", "Conservar la selección por validación"),
                           ("evaluar-modelos", "Comparar con una selección cerrada previamente")):
         experimento = comandos.add_parser(nombre, help=ayuda)
@@ -168,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
                                        leer_escenario(args.escenario), fechas, ejecucion_previa_id=args.previa)
         elif args.comando == "listar-ejecuciones":
             salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
-        elif args.comando == "planificar":
+        elif args.comando in ("planificar", 'pronosticar-producto'):
             referencia = None
             metodo = Persistencia() if args.metodo == "persistencia" else ReferenciaSemanal()
             if args.metodo == "random_forest":
@@ -179,10 +189,17 @@ def main(argv: list[str] | None = None) -> int:
                     recurso_json("protocolo_tp3_v1.json"), args.origen,
                     {"entorno": capturar_entorno(), "codigo": capturar_codigo()})
                 metodo = RandomForest(configuraciones, estados)
-            salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
+            if args.comando == 'pronosticar-producto':
+                salida = consultar_pronostico(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
+                    args.importacion, args.producto, args.origen, referencia_seleccion=referencia)
+            else:
+                salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
                                  recetario_configurado(args.recetario), args.importacion, args.origen,
                                  leer_escenario(args.escenario), referencia_seleccion=referencia,
                                  ejecucion_previa_id=args.previa)
+        elif args.comando == 'consultar-disponibilidad':
+            salida = {'disponibilidad': consultar_disponibilidad(SQLiteVentas(args.base), args.importacion,
+                args.producto, args.origen)}
         elif args.comando in ("seleccionar-modelos", "evaluar-modelos"):
             opciones = {"ventas": SQLiteVentas(args.base), "registro": SQLiteEjecuciones(args.base),
                        "importacion_id": args.importacion, "protocolo": recurso_json("protocolo_tp3_v1.json"),
