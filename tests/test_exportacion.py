@@ -1,4 +1,5 @@
 import csv
+import copy
 import hashlib
 import json
 import tempfile
@@ -6,7 +7,22 @@ import unittest
 from pathlib import Path
 
 from planificacion.infraestructura.exportacion import exportar_evaluacion
-from planificacion.infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
+from planificacion.dominio.serializacion import canonico
+
+
+class RegistroExportacion:
+    """Doble del contrato: el exportador no depende del esquema de SQLite."""
+    def __init__(self):
+        self.registros = {}
+
+    def guardar(self, contenido):
+        identidad = str(len(self.registros))
+        self.registros[identidad] = {**copy.deepcopy(contenido), 'ejecucion_id': identidad,
+            'huella_contenido': hashlib.sha256(canonico(contenido).encode()).hexdigest()}
+        return identidad
+
+    def recuperar(self, identidad):
+        return copy.deepcopy(self.registros[identidad])
 
 
 class ExportacionTests(unittest.TestCase):
@@ -14,7 +30,7 @@ class ExportacionTests(unittest.TestCase):
         self.temporal = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporal.cleanup)
         self.raiz = Path(self.temporal.name)
-        self.registro = SQLiteEjecuciones(self.raiz / "prueba.sqlite3")
+        self.registro = RegistroExportacion()
         self.seleccion = self.registro.guardar({"tipo": "seleccion_modelos", "version_codigo": "prueba",
             "entradas": {}, "resultado": {"productos": []}})
         s = self.registro.recuperar(self.seleccion)

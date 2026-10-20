@@ -12,6 +12,8 @@ from contextlib import closing
 from pathlib import Path
 
 from ..dominio.serializacion import canonico
+from ..dominio.calendario import fecha_iso
+from ..dominio.evaluacion import PrediccionEvaluada, metricas
 from .base_sqlite import conexion_sqlite
 
 
@@ -160,9 +162,17 @@ def proyectar_importacion(c, identidad):
 
 
 def _configuracion(c, metodo, parametros, contexto):
+    if metodo=='random_forest':
+        parametros = {k:parametros[k] for k in ('n_estimators','max_depth','min_samples_leaf','random_state')}
+    seleccion = contexto.get('seleccion_modelos') or {}
+    protocolo = contexto.get('protocolo_sha256')
+    if protocolo is None and contexto.get('importacion_id'):
+        fila = c.execute('SELECT protocolo_sha256 FROM Preparacion WHERE id_preparacion=?',
+                         (contexto['importacion_id'],)).fetchone()
+        protocolo = fila[0] if fila else None
     datos = {'metodo': metodo, 'parametros': parametros,
-             'protocolo_sha256': contexto.get('protocolo_sha256'),
-             'nucleo': contexto.get('codigo', {}).get('huella_nucleo_numerico')}
+             'protocolo_sha256': protocolo,
+             'nucleo': contexto.get('codigo', seleccion.get('codigo', {})).get('huella_nucleo_numerico')}
     identidad = clave(datos)
     _insertar_inmutable(c, 'Configuracion', 'id_configuracion', (identidad, metodo, canonico(datos)))
     return identidad
@@ -183,7 +193,7 @@ def _escenario(c, entradas, resultado, catalogo, previo):
         _insertar(c, 'Receta', (rcid, rid, producto, receta['producto_id'], receta['rendimiento']))
         for n, l in enumerate(receta['lineas'], 1):
             _insertar(c, 'RecetaInsumo', (rcid, n, l['insumo_id'], l['componente'], l['cantidad'], l['unidad']))
-    sid = clave(rid, resultado['escenario_id'])
+    sid = clave(rid, resultado['escenario_id'], entradas['fechas'][0])
     padre = None
     if previo:
         fila = c.execute('SELECT id_escenario FROM Ejecucion WHERE id_ejecucion=?', (previo,)).fetchone()
@@ -227,8 +237,23 @@ def proyectar_ejecucion(c, fila):
         catalogo = json.loads(p[0])
     previo = ctx.get('revision', {}).get('ejecucion_previa_id')
     sid = _escenario(c, entradas, res, catalogo, previo) if 'recetario' in entradas else None
-    _insertar(c, 'Ejecucion', (identidad, imp, sid, previo, d['tipo'],
-        canonico(ctx.get('seleccion_modelos', entradas.get('seleccion_id'))), fila['huella_contenido']))
+    seleccion = []
+    if d['tipo']=='seleccion_modelos':
+        for p in res.get('productos', []):
+            config = _configuracion(c, 'random_forest', p['parametros'], ctx)
+            seleccion.append({'producto_id':catalogo[p['producto_id']]['id_producto'],
+                'codigo_producto':p['producto_id'], 'metodo':'random_forest', 'id_configuracion':config,
+                'rol':p.get('estado'), 'cobertura_validacion':p.get('cobertura_validacion'),
+                'fecha_congelacion':fila['fecha_utc']})
+    for p in ctx.get('pronosticos', []):
+        config = _configuracion(c,p['metodo'],p.get('parametros',{}),ctx)
+        referencia = {'producto_id':catalogo[p['producto_id']]['id_producto'],
+            'codigo_producto':p['producto_id'], 'metodo':p['metodo'], 'id_configuracion':config,
+            'rol':p.get('parametros',{}).get('seleccion','referencia'),
+            'seleccion_origen':ctx.get('seleccion_modelos')}
+        if referencia not in seleccion:
+            seleccion.append(referencia)
+    _insertar(c, 'Ejecucion', (identidad, imp, sid, previo, d['tipo'], canonico(seleccion), fila['huella_contenido']))
     if sid:
         saldos = {(s['insumo_id'], s['fecha']): s for s in res['saldos']}
         for consumo in res['consumos']:
@@ -245,9 +270,17 @@ def proyectar_ejecucion(c, fila):
         parametros = producto['parametros']
         predicciones = producto.get('predicciones', [])
         por_caso = {}
-        for p in predicciones:
-            por_caso.setdefault((p['origen'], p['horizonte']), []).append(p)
-            _pronostico(c, identidad, catalogo, {**p, 'parametros': parametros if p['metodo']=='random_forest' else {}}, ctx)
+        n_entrenamiento = {(caso['origen'],caso['horizonte']): caso.get('ejemplos_entrenamiento')
+                           for caso in producto.get('casos', [])}
+        grupos = [(parametros, predicciones)] + [(a['parametros'], a['predicciones'])
+                                                 for a in producto.get('candidatas', [])]
+        for config, grupo in grupos:
+            for p in grupo:
+                codigo_config = _pronostico(c, identidad, catalogo, {**p,
+                    'parametros': config if p['metodo']=='random_forest' else {},
+                    'ejemplos_entrenamiento': n_entrenamiento.get((p['origen'],p['horizonte']))
+                                              if p['metodo']=='random_forest' else None}, ctx)
+                por_caso.setdefault((p['origen'], p['horizonte']), []).append({**p, 'id_configuracion': codigo_config})
         for caso in producto.get('casos', []):
             origen, h = caso['origen'], caso['horizonte']
             venta = c.execute('''SELECT id_venta FROM VentaDiaria
@@ -262,6 +295,13 @@ def proyectar_ejecucion(c, fila):
                 m['muestra'], '', m['n_mase_calculable'], canonico(m)))
         if d['tipo']=='seleccion_modelos':
             _configuracion(c, 'random_forest', parametros, ctx)
+            for candidata in producto.get('candidatas', []):
+                config = _configuracion(c, 'random_forest', candidata['parametros'], ctx)
+                for m in candidata['metricas']:
+                    _insertar(c, 'Evaluacion', (clave(identidad,pid,config,m['horizonte'],'validacion'),
+                        identidad,pid,config,m['horizonte'],'validacion','',m['n_mase_calculable'],canonico(m)))
+        if producto.get('bloques_p07'):
+            _proyectar_bloques(c, identidad, pid, producto, ctx)
 
 
 def _pronostico(c, ejecucion, catalogo, p, contexto):
@@ -271,6 +311,24 @@ def _pronostico(c, ejecucion, catalogo, p, contexto):
     _insertar(c, 'Pronostico', (clave(ejecucion,pid,config,origen,h), ejecucion,pid,config,
         origen,h,p.get('fecha',p.get('fecha_objetivo')),str(p.get('cantidad',p.get('estimado'))),
         origen,p.get('ejemplos_entrenamiento'),canonico(p)))
+    return config
+
+
+def _proyectar_bloques(c, ejecucion, pid, producto, contexto):
+    origenes = {b['origen'] for b in producto['bloques_p07']['por_bloque']}
+    for bloque in sorted(origenes):
+        for muestra in ('bloque', 'retiro_bloque'):
+            for m in producto['metricas']:
+                elegidos = [p for p in producto['predicciones'] if p['horizonte']==m['horizonte']
+                    and p['metodo']==m['metodo'] and p['origen'] in origenes
+                    and ((p['origen']==bloque) if muestra=='bloque' else (p['origen']!=bloque))]
+                valores = [PrediccionEvaluada(p['producto_id'],p['metodo'],fecha_iso(p['origen']),
+                    fecha_iso(p['fecha_objetivo']),p['horizonte'],p['real'],p['estimado'],p['escala'],p['pares_escala'])
+                    for p in elegidos]
+                resumen = metricas(valores)
+                config = _configuracion(c,m['metodo'],producto['parametros'] if m['metodo']=='random_forest' else {},contexto)
+                _insertar(c,'Evaluacion',(clave(ejecucion,pid,config,m['horizonte'],muestra,bloque),
+                    ejecucion,pid,config,m['horizonte'],muestra,bloque,resumen['n_mase_calculable'],canonico(resumen)))
 
 
 def crear_modelo(c):

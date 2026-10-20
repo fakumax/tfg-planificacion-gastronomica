@@ -7,7 +7,7 @@ from pathlib import Path
 from .. import __version__
 from ..dominio.ventas import FilaVenta, FuenteVentas, LoteVentas, Producto, VentaDiaria
 from .base_sqlite import conexion_sqlite
-from .modelo_relacional import proyectar_importacion
+from .modelo_relacional import proyectar_importacion, actualizar_en_conexion
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS importaciones_ventas (
@@ -101,7 +101,9 @@ class SQLiteVentas:
             c.executemany("INSERT INTO ventas_diarias VALUES (?, ?, ?, ?, ?, ?)",
                           ((identidad, d.producto_id, d.fecha.isoformat(), d.cantidad,
                             json.dumps(d.filas_origen), d.archivo_origen) for d in lote.diarias))
-            if version == 2:
+            if version == 0:
+                actualizar_en_conexion(c)
+            elif version == 2:
                 proyectar_importacion(c, identidad)
         return identidad
 

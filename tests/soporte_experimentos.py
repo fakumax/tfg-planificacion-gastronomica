@@ -1,6 +1,8 @@
 """Entradas explícitamente sintéticas, sin depender de originales locales."""
 
 import hashlib
+from contextlib import nullcontext
+from unittest.mock import patch
 
 from planificacion.configuracion import recurso_json
 from planificacion.entradas import CANTIDAD, FECHA, LOCAL, PRODUCTO
@@ -9,7 +11,7 @@ from planificacion.infraestructura.sqlite_ventas import SQLiteVentas
 from test_entradas import csv_sintetico, fila
 
 
-def importacion_sintetica(raiz, multiplicador=1):
+def importacion_sintetica(raiz, multiplicador=1, legado=False):
     protocolo = recurso_json("protocolo_tp3_v1.json")
     seleccion = protocolo["seleccion"]
     filas = [fila(**{FECHA: "2025-11-01", LOCAL: seleccion["local_original"],
@@ -24,5 +26,9 @@ def importacion_sintetica(raiz, multiplicador=1):
         "faltantes": {"producto_ingles_fuente": 7}}]}
     lote = preparar_ventas(raiz, manifiesto, protocolo)
     base = raiz / "prototipo.sqlite3"
-    identidad = SQLiteVentas(base).guardar(lote)
+    # Sembrar el esquema anterior permite probar la migración real sin modificar
+    # el código productivo ni depender de una base personal versionada.
+    contexto = patch('planificacion.infraestructura.sqlite_ventas.actualizar_en_conexion') if legado else nullcontext()
+    with contexto:
+        identidad = SQLiteVentas(base).guardar(lote)
     return base, identidad

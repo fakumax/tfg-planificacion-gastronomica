@@ -15,6 +15,10 @@ from soporte_experimentos import importacion_sintetica
 from test_balance import FECHAS, escenario_sintetico, plan_sintetico
 from test_recetas import modelo_sintetico
 from planificacion.dominio.recetas import interpretar_recetario
+from planificacion.dominio.evaluacion import metricas
+from planificacion.aplicacion.pronosticos import consultar_pronostico
+from planificacion.dominio.pronosticos import Persistencia
+from datetime import date
 
 
 class ModeloRelacionalTests(unittest.TestCase):
@@ -22,7 +26,7 @@ class ModeloRelacionalTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.raiz = Path(self.tmp.name)
-        self.base, self.importacion = importacion_sintetica(self.raiz)
+        self.base, self.importacion = importacion_sintetica(self.raiz, legado=True)
         self.repo = SQLiteEjecuciones(self.base)
 
     def guardar_balance(self):
@@ -82,3 +86,31 @@ class ModeloRelacionalTests(unittest.TestCase):
             c.execute("UPDATE BalanceDiario SET saldo_final='10' WHERE saldo_final IS NOT NULL")
         with self.assertRaisesRegex(ValueError, 'integridad relacional'):
             verificar_base(self.base)
+
+    def test_base_nueva_guarda_el_modelo_completo_desde_la_primera_importacion(self):
+        nueva = self.raiz / 'nueva'
+        nueva.mkdir()
+        base, identidad = importacion_sintetica(nueva)
+        with closing(sqlite3.connect(base)) as c:
+            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 2)
+            self.assertEqual(c.execute('SELECT id_preparacion FROM Preparacion').fetchall(), [(identidad,)])
+
+    def test_guarda_candidatas_y_metricas_de_validacion_con_sus_configuraciones(self):
+        actualizar_modelo(self.base)
+        parametros = {'n_estimators':100, 'max_depth':5, 'min_samples_leaf':2, 'random_state':42}
+        candidatas = [{'parametros':{**parametros,'n_estimators':n,'max_depth':d},
+                       'predicciones':[], 'metricas':[{'horizonte':1, **metricas([])}]}
+                      for n in (100,300) for d in (5,10)]
+        self.repo.guardar({'tipo':'seleccion_modelos', 'version_codigo':'prueba_sintetica',
+            'contexto':{'importacion_id':self.importacion}, 'entradas':{},
+            'resultado':{'productos':[{'producto_id':'P01','parametros':parametros,
+                                       'candidatas':candidatas,'casos':[]}]}})
+        with closing(sqlite3.connect(self.base)) as c:
+            self.assertEqual(c.execute('SELECT count(*) FROM Configuracion').fetchone()[0], 4)
+            self.assertEqual(c.execute("SELECT count(*) FROM Evaluacion WHERE tipo_muestra='validacion'").fetchone()[0], 4)
+
+    def test_consulta_recuperada_identifica_preparacion_y_protocolo_de_su_importacion(self):
+        registro = consultar_pronostico(SQLiteVentas(self.base), self.repo, Persistencia(),
+            self.importacion,'P01',date(2025,11,1))
+        self.assertEqual(registro['procedencia_preparacion']['id'], self.importacion)
+        self.assertEqual(registro['procedencia_preparacion']['version_preparacion'], 'preparacion_e2_v1')

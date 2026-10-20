@@ -46,7 +46,9 @@ class SQLiteEjecuciones:
                        contenido["tipo"], contenido["version_codigo"],
                        hashlib.sha256(entrada.encode("utf-8")).hexdigest(),
                        hashlib.sha256(cuerpo.encode("utf-8")).hexdigest(), cuerpo))
-            if version == 2:
+            if version == 0:
+                actualizar_en_conexion(c)
+            elif version == 2:
                 proyectar_ejecucion(c, c.execute('SELECT * FROM ejecuciones WHERE id=?', (identidad,)).fetchone())
         return identidad
 
@@ -67,7 +69,16 @@ class SQLiteEjecuciones:
                 or contenido["tipo"] != r["tipo"]):
             raise ValueError("La integridad de los metadatos de ejecución no coincide")
         r["ejecucion_id"] = r.pop("id")
-        return {**contenido, **r}
+        recuperado = {**contenido, **r}
+        importacion = contenido.get('contexto', {}).get('importacion_id')
+        if importacion:
+            from .sqlite_ventas import SQLiteVentas
+            lote = SQLiteVentas(self.ruta).recuperar_lote(importacion)
+            recuperado['procedencia_preparacion'] = {'id': importacion,
+                'version_preparacion': lote.version_preparacion, 'protocolo_id': lote.protocolo_id,
+                'protocolo_sha256': lote.protocolo_sha256,
+                'productos': normalizar(lote.productos), 'fuentes': normalizar(lote.fuentes)}
+        return recuperado
 
     def listar(self) -> list[dict]:
         with conexion_sqlite(self.ruta) as c:
