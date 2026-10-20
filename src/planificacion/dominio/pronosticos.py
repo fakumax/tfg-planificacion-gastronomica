@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Protocol
 
@@ -36,3 +36,15 @@ class Persistencia:
         if serie.get(origen) is None:
             raise ValueError(f"{producto_id}: no hay observación en el origen {origen.isoformat()}")
         return Estimacion(decimal_no_negativo(serie[origen], "observación del origen"))
+
+
+class ReferenciaSemanal:
+    nombre = "semanal"
+
+    def estimar(self, producto_id: str, serie: Mapping[date, int | None],
+                origen: date, horizonte: int) -> Estimacion:
+        validar_origen_horizonte(origen, horizonte)
+        referencia = origen + timedelta(days=horizonte - 7)
+        if serie.get(referencia) is None:
+            raise ValueError(f"{producto_id}: falta la referencia semanal del {referencia.isoformat()}")
+        return Estimacion(decimal_no_negativo(serie[referencia], "referencia semanal"))
