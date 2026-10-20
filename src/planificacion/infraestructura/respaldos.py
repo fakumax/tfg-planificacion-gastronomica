@@ -10,6 +10,7 @@ from pathlib import Path
 from .base_sqlite import conexion_sqlite
 from .sqlite_ejecuciones import SQLiteEjecuciones
 from .sqlite_ventas import SQLiteVentas
+from .modelo_relacional import verificar_modelo
 
 
 def verificar_base(ruta: Path) -> dict:
@@ -17,6 +18,7 @@ def verificar_base(ruta: Path) -> dict:
         if [r[0] for r in c.execute("PRAGMA integrity_check")] != ["ok"] or c.execute("PRAGMA foreign_key_check").fetchall():
             raise ValueError("La integridad o las relaciones de la base no son válidas")
         tablas = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        verificar_modelo(c)
     if not tablas.intersection({"importaciones_ventas", "ejecuciones"}):
         raise ValueError("La base no contiene datos del prototipo")
     importaciones = SQLiteVentas(ruta).listar_importaciones() if "importaciones_ventas" in tablas else []

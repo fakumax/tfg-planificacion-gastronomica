@@ -28,6 +28,7 @@ from .infraestructura.entorno import capturar_codigo, capturar_entorno
 from .infraestructura.motor_experimento import ejecutar_tareas
 from .infraestructura.exportacion import exportar_evaluacion
 from .infraestructura.respaldos import copiar_base, restaurar_base
+from .infraestructura.modelo_relacional import actualizar_modelo
 
 
 def informar_progreso(producto: str, completados: int, total: int) -> None:
@@ -110,6 +111,9 @@ def main(argv: list[str] | None = None) -> int:
     restaurar = comandos.add_parser("restaurar-base", help="Restaurar una copia en otra base nueva")
     restaurar.add_argument("--copia", type=Path, required=True)
     restaurar.add_argument("--destino", type=Path, required=True)
+    actualizar = comandos.add_parser("actualizar-base", help="Conservar una copia y agregar el modelo relacional del TP3")
+    actualizar.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    actualizar.add_argument("--respaldo", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -192,6 +196,10 @@ def main(argv: list[str] | None = None) -> int:
             salida = copiar_base(args.base, args.destino)
         elif args.comando == "restaurar-base":
             salida = restaurar_base(args.copia, args.destino)
+        elif args.comando == "actualizar-base":
+            copia = copiar_base(args.base, args.respaldo)
+            actualizar_modelo(args.base)
+            salida = {"estado": "correcto", "version_esquema": 2, "respaldo": copia}
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:

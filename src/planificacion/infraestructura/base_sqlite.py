@@ -19,7 +19,7 @@ def conexion_sqlite(ruta: Path, escritura=False):
         conexion.row_factory = sqlite3.Row
         conexion.execute("PRAGMA foreign_keys = ON")
         version = conexion.execute("PRAGMA user_version").fetchone()[0]
-        if version not in ((0, 1) if escritura else (1,)):
+        if version not in ((0, 1, 2) if escritura else (1, 2)):
             raise ValueError("La versión de la base no es compatible con este programa")
         yield conexion
         if conexion.in_transaction:

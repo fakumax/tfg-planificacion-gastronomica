@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from ..dominio.serializacion import canonico, normalizar
 from .base_sqlite import conexion_sqlite
+from .modelo_relacional import actualizar_en_conexion, proyectar_ejecucion
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS ejecuciones (
@@ -34,13 +35,19 @@ class SQLiteEjecuciones:
         identidad = uuid4().hex
         with conexion_sqlite(self.ruta, escritura=True) as c:
             c.executescript(ESQUEMA)
-            c.execute("PRAGMA user_version = 1")
+            version = c.execute("PRAGMA user_version").fetchone()[0]
+            if version == 0:
+                c.execute("PRAGMA user_version = 1")
             c.execute("BEGIN IMMEDIATE")
+            if version == 2:
+                actualizar_en_conexion(c)
             c.execute("INSERT INTO ejecuciones VALUES (?, ?, ?, ?, ?, ?, ?)",
                       (identidad, datetime.now(timezone.utc).isoformat(timespec="microseconds"),
                        contenido["tipo"], contenido["version_codigo"],
                        hashlib.sha256(entrada.encode("utf-8")).hexdigest(),
                        hashlib.sha256(cuerpo.encode("utf-8")).hexdigest(), cuerpo))
+            if version == 2:
+                proyectar_ejecucion(c, c.execute('SELECT * FROM ejecuciones WHERE id=?', (identidad,)).fetchone())
         return identidad
 
     def recuperar(self, identidad: str) -> dict:
