@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from .. import __version__
-from ..dominio.ventas import FuenteVentas, LoteVentas, Producto, VentaDiaria
+from ..dominio.ventas import FilaVenta, FuenteVentas, LoteVentas, Producto, VentaDiaria
 from .base_sqlite import conexion_sqlite
 
 ESQUEMA = """
@@ -139,3 +139,30 @@ class SQLiteVentas:
             return tuple(VentaDiaria(r["producto_id"], date.fromisoformat(r["fecha"]),
                                      r["cantidad"], tuple(json.loads(r["filas_origen"])),
                                      r["archivo_origen"]) for r in filas)
+
+    def recuperar_lote(self, importacion_id: str) -> LoteVentas:
+        """Reconstruye el lote de la preparación vigente y comprueba su identidad."""
+        with self._conexion() as c:
+            c.execute("BEGIN")
+            meta = c.execute("SELECT * FROM importaciones_ventas WHERE id = ?", (importacion_id,)).fetchone()
+            if meta is None:
+                raise LookupError("Importación inexistente")
+            fuentes = tuple(FuenteVentas(**dict(r)) for r in c.execute("""SELECT archivo, sha256,
+                anio, filas, cantidad_total FROM fuentes_ventas WHERE importacion_id = ? ORDER BY anio, archivo""",
+                (importacion_id,)))
+            productos = tuple(Producto(**dict(r)) for r in c.execute("""SELECT producto_id,
+                producto_original, nombre_modelado, local_original, anio FROM productos_ventas
+                WHERE importacion_id = ? ORDER BY producto_id""", (importacion_id,)))
+            filas = tuple(FilaVenta(r["producto_id"], date.fromisoformat(r["fecha"]), r["cantidad"],
+                                    r["descuento"], r["fila_origen"], r["archivo_origen"], r["ingles_fuente"])
+                          for r in c.execute("SELECT * FROM filas_ventas WHERE importacion_id = ? ORDER BY archivo_origen, fila_origen",
+                                             (importacion_id,)))
+            diarias = tuple(VentaDiaria(r["producto_id"], date.fromisoformat(r["fecha"]), r["cantidad"],
+                                        tuple(json.loads(r["filas_origen"])), r["archivo_origen"])
+                            for r in c.execute("SELECT * FROM ventas_diarias WHERE importacion_id = ? ORDER BY producto_id, fecha",
+                                               (importacion_id,)))
+        lote = LoteVentas(meta["protocolo_id"], meta["protocolo_sha256"], meta["version_preparacion"],
+                          fuentes, productos, filas, diarias)
+        if lote.identificador != importacion_id:
+            raise ValueError("La integridad de la importación no coincide con su identidad registrada")
+        return lote

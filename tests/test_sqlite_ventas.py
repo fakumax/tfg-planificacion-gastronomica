@@ -96,6 +96,24 @@ class SQLiteVentasTests(unittest.TestCase):
         with closing(sqlite3.connect(self.base)) as conexion, conexion:
             self.assertEqual(conexion.execute("PRAGMA user_version").fetchone()[0], 99)
 
+    def test_recuperar_lote_verifica_huella_de_los_datos_almacenados(self):
+        identidad = self.repo.guardar(self.lote)
+        recuperado = self.repo.recuperar_lote(identidad)
+        self.assertEqual(recuperado, self.lote)
+        self.assertEqual(recuperado.identificador, identidad)
+
+    def test_datos_almacenados_alterados_no_aparentan_misma_importacion(self):
+        identidad = self.repo.guardar(self.lote)
+        with closing(sqlite3.connect(self.base)) as c, c:
+            c.execute("UPDATE ventas_diarias SET cantidad = 99 WHERE cantidad IS NOT NULL")
+        with self.assertRaisesRegex(ValueError, "integridad"):
+            self.repo.recuperar_lote(identidad)
+
+    def test_recuperar_importacion_inexistente_no_devuelve_otro_lote(self):
+        self.repo.guardar(self.lote)
+        with self.assertRaises(LookupError):
+            self.repo.recuperar_lote("inexistente")
+
 
 if __name__ == "__main__":
     unittest.main()
