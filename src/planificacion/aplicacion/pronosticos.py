@@ -42,7 +42,7 @@ def consultar_disponibilidad(ventas: LecturaVentas, importacion_id: str,
 
 def consultar_pronostico(ventas: LecturaVentas, registro: RegistroEjecuciones, metodo: Pronosticador,
                          importacion_id: str, producto_id: str, origen: date,
-                         referencia_seleccion: dict | None = None) -> dict:
+                         referencia_seleccion: dict | None = None, metadatos: dict | None = None) -> dict:
     consulta = _historico(ventas, importacion_id, producto_id, origen)
     serie = {d.fecha: d.cantidad for d in consulta.diarias}
     filas = []
@@ -56,7 +56,7 @@ def consultar_pronostico(ventas: LecturaVentas, registro: RegistroEjecuciones, m
         except ValueError as exc:
             fila.update(disponible=False, cantidad=None, causa=str(exc))
         filas.append(fila)
-    contexto = {'importacion_id': importacion_id, 'metodo': metodo.nombre, 'origen': origen,
+    contexto = {**(metadatos or {}), 'importacion_id': importacion_id, 'metodo': metodo.nombre, 'origen': origen,
                 'pronosticos': [p for p in filas if p['disponible']]}
     if referencia_seleccion is not None:
         contexto['seleccion_modelos'] = referencia_seleccion

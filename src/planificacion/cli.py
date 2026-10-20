@@ -136,8 +136,9 @@ def main(argv: list[str] | None = None) -> int:
                                  "preparación diaria", "importación SQLite", "consulta histórica",
                                  "recetario versionado", "balance y alertas", "historial de ejecuciones",
                                  "planificación con métodos identificados", "selección y evaluación predictiva",
-                                 "exportación de evidencia", "interfaz local", "copias y restauración"],
-                "pendiente": ["verificación de instalación limpia", "publicación y entrega académica"],
+                                 "exportación de evidencia", "interfaz local", "copias y restauración",
+                                 "pronóstico individual", "IDs de reposición", "revisiones vinculadas",
+                                 "detalle por producto", "modelo relacional y migración"],
                 "protocolo": recurso_json("protocolo_tp3_v1.json"),
             }
         elif args.comando == "verificar-entradas":
@@ -175,7 +176,9 @@ def main(argv: list[str] | None = None) -> int:
             recetario = recetario_configurado(args.recetario)
             plan, fechas = leer_plan(args.plan)
             salida = ejecutar_balance(SQLiteEjecuciones(args.base), recetario, plan,
-                                       leer_escenario(args.escenario), fechas, ejecucion_previa_id=args.previa)
+                                       leer_escenario(args.escenario), fechas, ejecucion_previa_id=args.previa,
+                                       contexto={'metodo':'plan_manual','naturaleza_plan':'modelado',
+                                                 'codigo':capturar_codigo(),'entorno':capturar_entorno()})
         elif args.comando == "listar-ejecuciones":
             salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
         elif args.comando in ("planificar", 'pronosticar-producto'):
@@ -191,12 +194,14 @@ def main(argv: list[str] | None = None) -> int:
                 metodo = RandomForest(configuraciones, estados)
             if args.comando == 'pronosticar-producto':
                 salida = consultar_pronostico(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
-                    args.importacion, args.producto, args.origen, referencia_seleccion=referencia)
+                    args.importacion, args.producto, args.origen, referencia_seleccion=referencia,
+                    metadatos={'codigo':capturar_codigo(), 'entorno':capturar_entorno()})
             else:
                 salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
                                  recetario_configurado(args.recetario), args.importacion, args.origen,
                                  leer_escenario(args.escenario), referencia_seleccion=referencia,
-                                 ejecucion_previa_id=args.previa)
+                                 ejecucion_previa_id=args.previa,
+                                 metadatos={'codigo':capturar_codigo(), 'entorno':capturar_entorno()})
         elif args.comando == 'consultar-disponibilidad':
             salida = {'disponibilidad': consultar_disponibilidad(SQLiteVentas(args.base), args.importacion,
                 args.producto, args.origen)}

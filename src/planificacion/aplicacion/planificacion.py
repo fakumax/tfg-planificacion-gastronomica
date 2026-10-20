@@ -18,7 +18,7 @@ class LecturaPlanificacion(LecturaVentas, Protocol):
 def planificar(ventas: LecturaPlanificacion, ejecuciones: RegistroEjecuciones,
                 metodo: Pronosticador, recetario: Recetario, importacion_id: str,
                 origen: date, escenario: Escenario, referencia_seleccion: dict | None = None,
-                ejecucion_previa_id: str | None = None) -> dict:
+                ejecucion_previa_id: str | None = None, metadatos: dict | None = None) -> dict:
     if type(origen) is not date or origen > date.max - timedelta(days=7):
         raise ValueError("Origen fuera del calendario admitido")
     productos = tuple(sorted(ventas.listar_productos(importacion_id), key=lambda p: p.producto_id))
@@ -38,7 +38,7 @@ def planificar(ventas: LecturaPlanificacion, ejecuciones: RegistroEjecuciones,
                                 "horizonte": h, "metodo": metodo.nombre, "cantidad": estimacion.cantidad,
                                 "parametros": estimacion.parametros,
                                 "ejemplos_entrenamiento": estimacion.ejemplos_entrenamiento})
-    contexto = {"metodo": metodo.nombre, "naturaleza_plan": "estimado", "importacion_id": importacion_id,
+    contexto = {**(metadatos or {}), "metodo": metodo.nombre, "naturaleza_plan": "estimado", "importacion_id": importacion_id,
                 "origen": origen, "historico": historico, "pronosticos": pronosticos}
     if referencia_seleccion is not None:
         contexto["seleccion_modelos"] = referencia_seleccion

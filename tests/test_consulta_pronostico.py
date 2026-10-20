@@ -46,3 +46,9 @@ class ConsultaPronosticoTests(unittest.TestCase):
         self.ventas.cantidades = [None]
         r = consultar_pronostico(self.ventas, self.repo, Persistencia(), 'lote', 'P01', self.origen)
         self.assertTrue(all(p['cantidad'] is None and p['causa'] for p in r['resultado']['pronosticos']))
+
+    def test_consulta_conserva_codigo_y_entorno_recibidos_sin_cambiar_el_metodo(self):
+        meta = {'codigo':{'huella_conjunto':'c'*64}, 'entorno':{'python':'prueba'}}
+        r = consultar_pronostico(self.ventas,self.repo,Persistencia(),'lote','P01',self.origen,metadatos=meta)
+        self.assertEqual(r['contexto']['codigo'], meta['codigo'])
+        self.assertEqual(r['contexto']['entorno'], meta['entorno'])

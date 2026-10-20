@@ -48,6 +48,10 @@ def mostrar_resultado(registro):
     st.caption(f"{registro['fecha_utc']} · {registro['ejecucion_id']}")
     if contexto.get('revision'):
         st.caption(f"Revisión de la ejecución {contexto['revision']['ejecucion_previa_id']}")
+    with st.expander('Trazabilidad de la consulta'):
+        if registro.get('procedencia_preparacion'):
+            st.json(registro['procedencia_preparacion'])
+        st.json({k:contexto[k] for k in ('metodo','origen','codigo','entorno','revision','seleccion_modelos') if k in contexto})
     if registro["tipo"] in ("balance", "planificacion"):
         resultado = registro["resultado"]
         st.write(f"Método: {contexto.get('metodo', 'plan manual')} · Origen: {contexto.get('origen', 'plan modelado')}")
@@ -193,7 +197,8 @@ def pronosticos(base, identidad, ejecuciones):
             metodo = RandomForest(configs, estados)
         with st.spinner('Consultando el producto…'):
             resultado = consultar_pronostico(SQLiteVentas(base), SQLiteEjecuciones(base), metodo,
-                identidad, producto.producto_id, origen, referencia)
+                identidad, producto.producto_id, origen, referencia,
+                metadatos={'codigo':capturar_codigo(), 'entorno':capturar_entorno()})
         st.session_state['ultima_consulta'] = {'base': str(base), 'id': resultado['ejecucion_id']}
         st.rerun()
     ultimo = st.session_state.get('ultima_consulta', {})
@@ -271,7 +276,8 @@ def planificacion(base, identidad, ejecuciones):
             metodo = RandomForest(configs, estados)
         with st.spinner("Calculando el plan completo…"):
             resultado = planificar(SQLiteVentas(base), SQLiteEjecuciones(base), metodo, recetario,
-                identidad, origen, escenario, referencia_seleccion=referencia, ejecucion_previa_id=previa)
+                identidad, origen, escenario, referencia_seleccion=referencia, ejecucion_previa_id=previa,
+                metadatos={'codigo':capturar_codigo(), 'entorno':capturar_entorno()})
         st.session_state["ultimo_plan"] = {"base": str(base), "id": resultado["ejecucion_id"]}
         st.rerun()
     ultimo = st.session_state.get("ultimo_plan", {})
