@@ -1,0 +1,206 @@
+{
+  "fecha_verificacion": "2026-09-27",
+  "fuente": "https://www.data.go.kr/data/15134111/fileData.do",
+  "versiones_historicas_publicadas": 2,
+  "archivos_csv": [
+    {
+      "anio_publicado": 2023,
+      "archivo": "high1_condo_2023_original.csv",
+      "url_descarga": "https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000003017693&fileDetailSn=1&insertDataPrcus=N",
+      "sha256": "29183ce74e45b5d507fb3bd7afc6fb232dda8a214bbb9e2dce763802a1fe9aa2",
+      "bytes": 2118012,
+      "codificacion": "cp949",
+      "filas": 46028,
+      "columnas": [
+        "fecha",
+        "local_original",
+        "producto_original",
+        "descuento",
+        "cantidad"
+      ],
+      "fecha_min": "2023-01-01",
+      "fecha_max": "2023-12-31",
+      "anios_internos": [
+        2023
+      ],
+      "fechas_distintas": 365,
+      "fechas_invalidas": 0,
+      "dias_calendario_esperados": 365,
+      "dias_sin_filas": [],
+      "productos": 600,
+      "locales": [
+        "단체식당",
+        "마운틴카페테리아",
+        "아테나키친",
+        "전망카페",
+        "하이하우 클럽라운지"
+      ],
+      "duplicados_exactos": 0,
+      "claves_producto_local_fecha_repetidas": 11546,
+      "cantidades_invalidas": 0,
+      "cantidades_negativas": 0,
+      "cantidades_cero": 0,
+      "cantidad_total": 443284.0,
+      "cantidad_min": 1.0,
+      "cantidad_max": 3000.0,
+      "faltantes": {
+        "fecha": 0,
+        "local_original": 0,
+        "producto_original": 0,
+        "descuento": 0,
+        "cantidad": 0
+      },
+      "descuentos": {
+        "N": 23965,
+        "Y": 22063
+      },
+      "claves_fecha_local_producto_descuento_repetidas": 0,
+      "cantidades_no_enteras": 0
+    },
+    {
+      "anio_publicado": 2024,
+      "archivo": "high1_condo_2024_original.csv",
+      "url_descarga": "https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000003222605&fileDetailSn=1&insertDataPrcus=N",
+      "sha256": "fbb83fac0ff5f326f79c46bc6d0809c495303863444b0fdfc8f5e1d087198030",
+      "bytes": 2067018,
+      "codificacion": "cp949",
+      "filas": 41270,
+      "columnas": [
+        "fecha",
+        "local_original",
+        "producto_original",
+        "descuento",
+        "cantidad"
+      ],
+      "fecha_min": "2024-01-01",
+      "fecha_max": "2024-12-31",
+      "anios_internos": [
+        2024
+      ],
+      "fechas_distintas": 366,
+      "fechas_invalidas": 0,
+      "dias_calendario_esperados": 366,
+      "dias_sin_filas": [],
+      "productos": 601,
+      "locales": [
+        "구름담은 카페",
+        "단체식당",
+        "마운틴카페테리아",
+        "아테나키친",
+        "하이하우 클럽라운지"
+      ],
+      "duplicados_exactos": 0,
+      "claves_producto_local_fecha_repetidas": 10343,
+      "cantidades_invalidas": 0,
+      "cantidades_negativas": 0,
+      "cantidades_cero": 0,
+      "cantidad_total": 388312.0,
+      "cantidad_min": 1.0,
+      "cantidad_max": 3000.0,
+      "faltantes": {
+        "fecha": 0,
+        "local_original": 0,
+        "producto_original": 0,
+        "descuento": 0,
+        "cantidad": 0
+      },
+      "descuentos": {
+        "N": 22131,
+        "Y": 19139
+      },
+      "claves_fecha_local_producto_descuento_repetidas": 0,
+      "cantidades_no_enteras": 0
+    },
+    {
+      "anio_publicado": 2025,
+      "archivo": "high1_condo_2025_original.csv",
+      "url_descarga": "https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000007629346&fileDetailSn=1&insertDataPrcus=N",
+      "sha256": "8597bf3062d4f57b024ca160b132fa6a3f87a2cea614df097f441d824b448caa",
+      "bytes": 1464366,
+      "codificacion": "cp949",
+      "filas": 19146,
+      "columnas": [
+        "fecha",
+        "local_original",
+        "producto_original",
+        "producto_ingles_fuente",
+        "descuento",
+        "cantidad"
+      ],
+      "fecha_min": "2025-01-01",
+      "fecha_max": "2025-12-31",
+      "anios_internos": [
+        2025
+      ],
+      "fechas_distintas": 365,
+      "fechas_invalidas": 0,
+      "dias_calendario_esperados": 365,
+      "dias_sin_filas": [],
+      "productos": 183,
+      "locales": [
+        "In Room Dining(K)"
+      ],
+      "duplicados_exactos": 0,
+      "claves_producto_local_fecha_repetidas": 4,
+      "cantidades_invalidas": 0,
+      "cantidades_negativas": 0,
+      "cantidades_cero": 0,
+      "cantidad_total": 69296.0,
+      "cantidad_min": 1.0,
+      "cantidad_max": 204.0,
+      "faltantes": {
+        "fecha": 0,
+        "local_original": 0,
+        "producto_original": 0,
+        "producto_ingles_fuente": 444,
+        "descuento": 0,
+        "cantidad": 0
+      },
+      "descuentos": {
+        "N": 19124,
+        "Y": 22
+      },
+      "claves_fecha_local_producto_descuento_repetidas": 0,
+      "cantidades_no_enteras": 0
+    }
+  ],
+  "comparacion_entre_anios": [
+    {
+      "anios": [
+        2023,
+        2024
+      ],
+      "locales_nombre_exacto_comunes": [
+        "단체식당",
+        "마운틴카페테리아",
+        "아테나키친",
+        "하이하우 클럽라운지"
+      ],
+      "productos_nombre_exacto_comunes": 314,
+      "pares_local_producto_exactos_comunes": 149
+    },
+    {
+      "anios": [
+        2023,
+        2025
+      ],
+      "locales_nombre_exacto_comunes": [],
+      "productos_nombre_exacto_comunes": 1,
+      "pares_local_producto_exactos_comunes": 0
+    },
+    {
+      "anios": [
+        2024,
+        2025
+      ],
+      "locales_nombre_exacto_comunes": [],
+      "productos_nombre_exacto_comunes": 1,
+      "pares_local_producto_exactos_comunes": 0
+    }
+  ],
+  "total_filas": 106444,
+  "total_fechas": 1096,
+  "advertencia": "La continuidad temporal del conjunto no demuestra continuidad del mismo local ni del mismo producto. No entrenar una serie de tres años sin homologación documentada de identidades.",
+  "fecha_control_revision": "2026-10-14",
+  "nota_fechas": "Auditoría histórica registrada el 27/09/2026; nueva comprobación local el 14/10/2026. Esta última no es una fecha de descarga."
+}

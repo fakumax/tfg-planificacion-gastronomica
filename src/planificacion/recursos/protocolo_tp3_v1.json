@@ -1,0 +1,200 @@
+{
+  "id": "protocolo_tp3_v1",
+  "fecha_registro_repositorio": "2026-10-19",
+  "documento_base": {
+    "archivo": "Vergara_Facundo – Prototipado Tecnológico TP3.docx",
+    "sha256": "2665af02e60450a74305ff7c9615806262e09ca303d0e2d52adcd081366598bd"
+  },
+  "estado": "Fijado antes de entrenar; implementación y resultados predictivos pendientes",
+  "seleccion": {
+    "anio": 2025,
+    "local_original": "In Room Dining(K)",
+    "catalogo_sha256": "2bb48d12328b183c30e57caeb1f5a8354d0174b43ee4dbce17efe2f8ccc78380",
+    "productos": [
+      {
+        "producto_id": "P01",
+        "producto_original": "김치찌개",
+        "nombre_modelado": "Guiso de kimchi y cerdo con arroz",
+        "receta_id": "R01",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P02",
+        "producto_original": "한국식 조찬",
+        "nombre_modelado": "Desayuno modelado: arroz, huevo, sopa de tofu, kimchi y nori",
+        "receta_id": "R02",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P03",
+        "producto_original": "전복 된장찌개",
+        "nombre_modelado": "Guiso de doenjang con abulón y arroz",
+        "receta_id": "R03",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P04",
+        "producto_original": "간고등어정식",
+        "nombre_modelado": "Caballa asada con arroz y kimchi",
+        "receta_id": "R04",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P05",
+        "producto_original": "낙지볶음소면",
+        "nombre_modelado": "Pulpo salteado con fideos somen",
+        "receta_id": "R05",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P06",
+        "producto_original": "한우 불고기 정식",
+        "nombre_modelado": "Bulgogi vacuno con arroz y kimchi",
+        "receta_id": "R06",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      },
+      {
+        "producto_id": "P07",
+        "producto_original": "더덕 흑돼지구이",
+        "nombre_modelado": "Cerdo con deodeok, arroz y kimchi",
+        "receta_id": "R07",
+        "version": "1.0",
+        "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+      }
+    ]
+  },
+  "preparacion": {
+    "version": "preparacion_e2_v1",
+    "ausencia": "sin_fila; no equivale a cero",
+    "agregacion": "fecha-local-producto después de comprobar claves con categoría de descuento",
+    "no_homologar_otros_anios": true
+  },
+  "recetario": {
+    "version": "cierre_v1",
+    "tipo": "recetas_modeladas",
+    "archivos": {
+      "recetario_modelado_v1.json": "ff5437ea6579993706d81eb1e6e231e5d03b78be892b530a148ca8bcdaa2953b",
+      "ingredientes.csv": "524919a30b759c4b9959f94acd9d71dfa191a514a7864efbd12fb6f8ce554b67",
+      "recetas_por_unidad.csv": "9092d9cc9f1105cb2ed196c92f5fb37b24c173011bcbbb55415f9553efd60ec1",
+      "fuentes.csv": "ec58f25ed073f10a60095db5431941fc5b766410536c5cca8a7a1ef8ea0c1e59"
+    },
+    "inventario_y_reposiciones": "sintéticos; no observados en el negocio"
+  },
+  "particion": {
+    "entrenamiento_inicial": [
+      "2025-01-01",
+      "2025-09-30"
+    ],
+    "origenes_validacion": [
+      "2025-09-30",
+      "2025-10-24"
+    ],
+    "origenes_excluidos_cruce": [
+      "2025-10-25",
+      "2025-10-30"
+    ],
+    "origenes_prueba": [
+      "2025-10-31",
+      "2025-12-24"
+    ],
+    "reajuste": "En cada origen t, usar ejemplos con respuesta disponible hasta t"
+  },
+  "horizontes": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "variables": [
+    "s(t)",
+    "s(t-1)",
+    "s(t-7)",
+    "promedio completo s(t) a s(t-6)",
+    "día de semana de t+h",
+    "mes de t+h"
+  ],
+  "admisibilidad": {
+    "fechas_entrada_completas": "t,t-1,t-2,t-3,t-4,t-5,t-6,t-7",
+    "respuesta": "s(t+h) observada",
+    "referencia_semanal": "s(t+h-7) observada",
+    "min_ejemplos_entrenamiento": 60,
+    "mismos_casos_para_todos_los_metodos": true,
+    "causas_exclusion": [
+      "entradas_incompletas",
+      "respuesta_ausente",
+      "referencia_semanal_ausente",
+      "menos_de_60_ejemplos"
+    ]
+  },
+  "metodos": {
+    "persistencia": "s(t)",
+    "semanal": "s(t+h-7)",
+    "random_forest": {
+      "modelo_por": [
+        "producto",
+        "horizonte"
+      ],
+      "n_estimators": [
+        100,
+        300
+      ],
+      "max_depth": [
+        5,
+        10
+      ],
+      "min_samples_leaf": 2,
+      "random_state": 42
+    }
+  },
+  "seleccion_configuracion": {
+    "min_origenes_comunes_por_horizonte": 14,
+    "criterio": "promedio simple de los 7 MAE por producto",
+    "tolerancia_desempate": 1e-06,
+    "desempate": [
+      "menor max_depth",
+      "menor n_estimators"
+    ],
+    "sin_cobertura_validacion": {
+      "n_estimators": 100,
+      "max_depth": 5,
+      "min_samples_leaf": 2,
+      "random_state": 42
+    },
+    "sin_minimo_entrenamiento": "no ajustable; no inventar predicción RF"
+  },
+  "metricas": {
+    "principales": [
+      "MAE",
+      "RMSE",
+      "MASE calculable"
+    ],
+    "mase": "media de errores absolutos escalados en cada origen por pares completos de entrenamiento separados 7 días; escala cero o sin pares: no aplicable",
+    "dispersion_error_absoluto": [
+      "mediana",
+      "cuartiles",
+      "máximo"
+    ],
+    "cobertura": [
+      "predicciones",
+      "orígenes",
+      "fechas objetivo distintas",
+      "pares de escala y casos MASE"
+    ],
+    "menos_de_14_origenes_prueba": "solo descripción exploratoria"
+  },
+  "sensibilidad": {
+    "separacion_minima_origenes_dias": 7,
+    "seleccion": "cronológica",
+    "P07": "diferencia por bloque y retiro de un bloque por vez",
+    "no_asumir_independencia": true
+  }
+}
