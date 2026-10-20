@@ -1,13 +1,12 @@
 """Persistencia transaccional de importaciones de ventas."""
 
 import json
-import sqlite3
-from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
 
 from .. import __version__
 from ..dominio.ventas import FuenteVentas, LoteVentas, Producto, VentaDiaria
+from .base_sqlite import conexion_sqlite
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS importaciones_ventas (
@@ -71,31 +70,8 @@ class SQLiteVentas:
     def __init__(self, ruta: Path):
         self.ruta = ruta.resolve()
 
-    @contextmanager
     def _conexion(self, escritura=False):
-        if escritura:
-            self.ruta.parent.mkdir(parents=True, exist_ok=True)
-            conexion = sqlite3.connect(self.ruta, isolation_level=None)
-        else:
-            if not self.ruta.is_file():
-                raise FileNotFoundError("No existe la base de ventas indicada")
-            conexion = sqlite3.connect(self.ruta.as_uri() + "?mode=ro", uri=True,
-                                       isolation_level=None)
-        conexion.row_factory = sqlite3.Row
-        conexion.execute("PRAGMA foreign_keys = ON")
-        try:
-            version = conexion.execute("PRAGMA user_version").fetchone()[0]
-            if version not in ((0, 1) if escritura else (1,)):
-                raise ValueError("La versión de la base no es compatible con este programa")
-            yield conexion
-            if conexion.in_transaction:
-                conexion.commit()
-        except Exception:
-            if conexion.in_transaction:
-                conexion.rollback()
-            raise
-        finally:
-            conexion.close()
+        return conexion_sqlite(self.ruta, escritura)
 
     def guardar(self, lote: LoteVentas) -> str:
         identidad = lote.identificador
