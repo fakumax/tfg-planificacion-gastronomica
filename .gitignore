@@ -10,6 +10,9 @@ dist/
 .ruff_cache/
 .coverage
 htmlcov/
+node_modules/
+frontend/coverage/
+*.tsbuildinfo
 
 # Configuración y credenciales locales
 .env

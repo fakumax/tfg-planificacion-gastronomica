@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from .. import __version__
 from ..aplicacion.detalle import detallar_insumo
@@ -80,12 +81,14 @@ def crear_app(base: Path | None = None, cliente: Path | None = None) -> FastAPI:
     ruta = (base or Path(os.environ.get('TFG_BASE', 'datos/prototipo.sqlite3'))).resolve()
     app = FastAPI(title='Planificación gastronómica', version=__version__, docs_url=None, redoc_url=None)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=['127.0.0.1', 'localhost', 'testserver'])
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     ventas, registro = SQLiteVentas(ruta), SQLiteEjecuciones(ruta)
 
     @app.middleware('http')
     async def origen_local(request: Request, siguiente):
         origen = request.headers.get('origin')
         permitidos = {f'http://{host}:{port}' for host in ('127.0.0.1','localhost') for port in (5173,8765)}
+        permitidos.add(str(request.base_url).rstrip('/'))
         if origen and origen not in permitidos:
             return JSONResponse({'mensaje':'Esta aplicación admite consultas desde su interfaz local.'},status_code=403)
         if request.method in ('POST','PUT','PATCH') and not request.headers.get('content-type','').startswith('application/json'):

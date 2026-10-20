@@ -1,0 +1,31 @@
+{
+  "name": "planificacion-interfaz",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "preview": "vite preview --host 127.0.0.1",
+    "format": "prettier --write src index.html vite.config.ts tsconfig.json"
+  },
+  "dependencies": {
+    "@fontsource-variable/ibm-plex-sans": "5.3.0",
+    "@fontsource/dm-serif-display": "5.3.0",
+    "lucide-react": "1.60.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-is": "19.3.1",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  }
+}
