@@ -7,7 +7,6 @@ import sqlite3
 import sys
 from dataclasses import asdict
 from datetime import date, datetime, timezone
-from importlib.resources import files
 from pathlib import Path
 
 from . import __version__
@@ -19,12 +18,10 @@ from .aplicacion.balance import ejecutar_balance
 from .dominio.calendario import fecha_iso
 from .dominio.serializacion import convertir
 from .infraestructura.escenarios import leer_escenario, leer_plan
-from .infraestructura.recetario import cargar_recetario
 from .infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
-
-
-def recurso_json(nombre: str) -> dict:
-    return json.loads(files("planificacion").joinpath("recursos", nombre).read_text(encoding="utf-8"))
+from .aplicacion.planificacion import planificar
+from .configuracion import recetario_configurado, recurso_json
+from .dominio.pronosticos import Persistencia
 
 
 def fecha_argumento(valor: str) -> date:
@@ -69,6 +66,13 @@ def main(argv: list[str] | None = None) -> int:
     ejecucion = comandos.add_parser("ver-ejecucion", help="Recuperar entradas y resultados de una ejecución")
     ejecucion.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
     ejecucion.add_argument("--ejecucion", required=True)
+    planificacion = comandos.add_parser("planificar", help="Integrar pronóstico y balance desde las ventas")
+    planificacion.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    planificacion.add_argument("--importacion", required=True)
+    planificacion.add_argument("--origen", type=fecha_argumento, required=True)
+    planificacion.add_argument("--metodo", choices=["persistencia"], default="persistencia")
+    planificacion.add_argument("--escenario", type=Path, required=True)
+    planificacion.add_argument("--recetario", type=Path)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -77,8 +81,9 @@ def main(argv: list[str] | None = None) -> int:
                 "python": platform.python_version(),
                 "implementado": ["verificación de originales en modo lectura",
                                  "preparación diaria", "importación SQLite", "consulta histórica",
-                                 "recetario versionado", "balance y alertas", "historial de ejecuciones"],
-                "pendiente": ["pronósticos", "interfaz", "evaluación"],
+                                 "recetario versionado", "balance y alertas", "historial de ejecuciones",
+                                 "planificación integrada con persistencia"],
+                "pendiente": ["Random Forest y referencia semanal", "interfaz", "evaluación"],
                 "protocolo": recurso_json("protocolo_tp3_v1.json"),
             }
         elif args.comando == "verificar-entradas":
@@ -113,14 +118,16 @@ def main(argv: list[str] | None = None) -> int:
                                   "total_observado": consulta.total_observado,
                                   "incompleta": consulta.incompleta}}
         elif args.comando == "calcular-balance":
-            ruta = args.recetario or files("planificacion").joinpath("recursos", "recetario_modelado_v1.json")
-            huella = recurso_json("protocolo_tp3_v1.json")["recetario"]["archivos"]["recetario_modelado_v1.json"]
-            recetario = cargar_recetario(ruta, huella)
+            recetario = recetario_configurado(args.recetario)
             plan, fechas = leer_plan(args.plan)
             salida = ejecutar_balance(SQLiteEjecuciones(args.base), recetario, plan,
                                        leer_escenario(args.escenario), fechas)
         elif args.comando == "listar-ejecuciones":
             salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
+        elif args.comando == "planificar":
+            salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), Persistencia(),
+                                 recetario_configurado(args.recetario), args.importacion, args.origen,
+                                 leer_escenario(args.escenario))
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
