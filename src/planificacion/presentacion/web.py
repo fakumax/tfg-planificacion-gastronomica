@@ -17,6 +17,8 @@ from ..aplicacion.planificacion import planificar
 from ..aplicacion.revisiones import recuperar_escenario
 from ..aplicacion.detalle import detallar_insumo
 from ..aplicacion.ventas import consultar_ventas
+from ..aplicacion.pronosticos import consultar_pronostico, consultar_disponibilidad
+from .consultas import preparar_grafico, explicar_metricas, casos_presentados
 from ..configuracion import recetario_configurado, recurso_json
 from ..dominio.balance import EntradaPrevista, Escenario, Existencia
 from ..dominio.pronosticos import Persistencia, ReferenciaSemanal
@@ -84,6 +86,11 @@ def mostrar_resultado(registro):
         with st.expander("Consumos y procedencia"):
             tabla(resultado["consumos"])
             st.json(registro["entradas"])
+    elif registro['tipo']=='consulta_pronostico':
+        st.write(f"Producto: {registro['resultado']['producto_id']} · Método: {contexto['metodo']} · Origen: {contexto['origen']}")
+        if not registro['resultado']['completo']:
+            st.warning('Consulta incompleta: las fechas no disponibles conservan su causa y no representan cero.')
+        tabla(registro['resultado']['pronosticos'])
     elif registro["tipo"] == "seleccion_modelos":
         tabla([{k: p[k] for k in ("producto_id", "estado", "parametros", "cobertura_validacion")}
                for p in registro["resultado"]["productos"]])
@@ -130,6 +137,8 @@ def ventas(base, identidad):
                  consulta.total_observado if consulta.total_observado is not None else "Sin datos")
         tabla([{"fecha": d.fecha, "cantidad": d.cantidad,
                 "estado": "Observado" if d.cantidad is not None else "Sin fila"} for d in consulta.diarias])
+        st.altair_chart(preparar_grafico([{'fecha': d.fecha, 'cantidad': d.cantidad} for d in consulta.diarias]), width='stretch')
+        st.caption('Los cortes del gráfico conservan las fechas sin fila; un cero observado sí se representa.')
         if consulta.incompleta:
             st.warning("El período está incompleto. Una fecha sin fila no representa una venta de cero.")
         with st.expander("Fuentes de la consulta"):
@@ -145,7 +154,51 @@ def recetas():
     st.write(f"Rendimiento: {receta.rendimiento} unidad(es)")
     tabla([{**asdict(l), "insumo": nombres[l.insumo_id].nombre,
             "control_de_stock": nombres[l.insumo_id].control_stock} for l in receta.lineas])
+    modelo = recurso_json('recetario_modelado_v1.json')
+    ficha = next(r for r in modelo['recetas'] if r['producto_id']==receta.producto_id)
+    st.write('Adaptación:', ficha['adaptacion'])
+    st.write('Supuesto de porción:', ficha['equivalencia_unidad'])
+    fuentes = {f['fuente_id']: f for f in modelo['fuentes']}
+    st.write('Referencias de composición')
+    for fid in ficha['fuentes']:
+        f = fuentes[fid]
+        st.markdown(f"[{f['titulo']}]({f['url']}) · {f['autor']}")
+    if not ficha['fuentes']:
+        st.write('Composición definida para el escenario modelado; sin receta externa atribuida.')
     st.caption("Estas cantidades no son recetas observadas del establecimiento de origen de las ventas.")
+
+
+def pronosticos(base, identidad, ejecuciones):
+    st.title('Pronósticos por producto')
+    st.caption('Esta consulta es independiente. Un balance completo sigue requiriendo todos los productos y fechas.')
+    productos = SQLiteVentas(base).listar_productos(identidad)
+    producto = st.selectbox('Producto', productos, key='producto_pronostico',
+        format_func=lambda p: f'{p.producto_id} · {p.nombre_modelado}')
+    origen = st.date_input('Origen de la consulta', date(2025,11,1), key='origen_consulta')
+    elegido = st.selectbox('Método de consulta', ['Persistencia','Referencia semanal','Random Forest'], key='metodo_consulta')
+    selecciones = [e['id'] for e in reversed(ejecuciones) if e['tipo']=='seleccion_modelos']
+    seleccion = st.selectbox('Selección cerrada', selecciones, key='seleccion_individual') if elegido=='Random Forest' and selecciones else None
+    if st.button('Revisar disponibilidad de datos', key='disponibilidad'):
+        tabla(consultar_disponibilidad(SQLiteVentas(base), identidad, producto.producto_id, origen))
+        st.caption('La disponibilidad comprueba entradas y cantidad de ejemplos. Random Forest requiere además una selección cerrada compatible.')
+    if st.button('Consultar y guardar', key='pronosticar', type='primary'):
+        referencia = None
+        metodo = Persistencia() if elegido=='Persistencia' else ReferenciaSemanal()
+        if elegido=='Random Forest':
+            if not seleccion:
+                raise ValueError('Falta una selección cerrada para Random Forest')
+            configs, estados, referencia = configuracion_planificacion(SQLiteVentas(base), SQLiteEjecuciones(base),
+                identidad, seleccion, recurso_json('protocolo_tp3_v1.json'), origen,
+                {'entorno': capturar_entorno(), 'codigo': capturar_codigo()})
+            metodo = RandomForest(configs, estados)
+        with st.spinner('Consultando el producto…'):
+            resultado = consultar_pronostico(SQLiteVentas(base), SQLiteEjecuciones(base), metodo,
+                identidad, producto.producto_id, origen, referencia)
+        st.session_state['ultima_consulta'] = {'base': str(base), 'id': resultado['ejecucion_id']}
+        st.rerun()
+    ultimo = st.session_state.get('ultima_consulta', {})
+    if ultimo.get('base')==str(base):
+        mostrar_resultado(SQLiteEjecuciones(base).recuperar(ultimo['id']))
 
 
 def planificacion(base, identidad, ejecuciones):
@@ -250,7 +303,16 @@ def evaluacion(base, ejecuciones):
     producto = productos[pid]
     st.write("Configuración:", producto["estado_configuracion"])
     st.caption("Menor error es mejor. La precisión no demuestra ahorro ni beneficios operativos.")
-    tabla(producto["metricas"])
+    tabla(explicar_metricas(producto))
+    with st.expander('Casos comunes y exclusiones', expanded=True):
+        casos = casos_presentados(producto)
+        solo_excluidos = st.checkbox('Mostrar solo casos excluidos', value=True)
+        visibles = [c for c in casos if not c['evaluable']] if solo_excluidos else casos
+        st.caption(f"{sum(c['evaluable'] for c in casos)} casos comunes · {sum(not c['evaluable'] for c in casos)} excluidos")
+        if visibles:
+            tabla(visibles)
+        else:
+            st.info('No hay casos para el filtro elegido.')
     if any(m["exploratoria"] for m in producto["metricas"]):
         st.warning("Algunos horizontes tienen menos de 14 orígenes; su comparación es exploratoria.")
     with st.expander("Sensibilidad sin solapamiento"):
@@ -278,7 +340,7 @@ def mostrar_app():
     st.set_page_config(page_title="Planificación gastronómica", page_icon="🍽️", layout="wide")
     st.sidebar.title("Planificación")
     st.sidebar.caption(f"Prototipo local · {__version__}")
-    pagina = st.sidebar.radio("Sección", ["Inicio", "Ventas", "Recetas", "Planificación", "Historial", "Evaluación", "Copias"], key="pagina")
+    pagina = st.sidebar.radio("Sección", ["Inicio", "Ventas", 'Pronósticos', "Recetas", "Planificación", "Historial", "Evaluación", "Copias"], key="pagina")
     with st.sidebar.expander("Configuración local"):
         base = Path(st.text_input("Base de datos", os.environ.get("TFG_BASE", "datos/prototipo.sqlite3"), key="base")).resolve()
     try:
@@ -292,6 +354,7 @@ def mostrar_app():
         elif pagina == "Copias": copias(base)
         elif not identidad: st.info("Primero cargá los originales desde Inicio o elegí una base que ya tenga una importación.")
         elif pagina == "Ventas": ventas(base, identidad)
+        elif pagina == 'Pronósticos': pronosticos(base, identidad, ejecuciones)
         else: planificacion(base, identidad, ejecuciones)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
         st.error(f"No se completó la operación: {exc}")

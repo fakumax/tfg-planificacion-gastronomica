@@ -43,6 +43,20 @@ class InterfazTests(unittest.TestCase):
         tabla = app.dataframe[0].value
         self.assertTrue(tabla["cantidad"].isna().any())
         self.assertEqual(tabla["cantidad"].dropna().tolist(), [1])
+        self.assertTrue(app.get('vega_lite_chart'))
+
+    def test_pronostico_individual_y_procedencia_de_receta(self):
+        importacion_sintetica(self.raiz)
+        app = self.app()
+        app.radio(key='pagina').set_value('Pronósticos').run()
+        app.button(key='pronosticar').click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        registros = SQLiteEjecuciones(self.base).listar()
+        self.assertEqual(registros[-1]['tipo'], 'consulta_pronostico')
+        app.radio(key='pagina').set_value('Recetas').run()
+        self.assertTrue(any('Adaptación' in m.value for m in app.markdown))
+        self.assertTrue(any('koreanbapsang.com' in m.value for m in app.markdown))
 
     def test_plan_completo_se_guarda_y_origen_ausente_no_crea_otro(self):
         importacion_sintetica(self.raiz)

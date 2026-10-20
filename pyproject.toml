@@ -8,7 +8,7 @@ version = "0.6.0"
 description = "Pronóstico de ventas y planificación de insumos gastronómicos"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["numpy==2.3.5", "scikit-learn==1.9.1", "streamlit==1.66.0", "pandas==3.0.1"]
+dependencies = ["numpy==2.3.5", "scikit-learn==1.9.1", "streamlit==1.66.0", "pandas==3.0.1", "altair==6.3.0"]
 
 [project.scripts]
 planificacion = "planificacion.cli:main"
