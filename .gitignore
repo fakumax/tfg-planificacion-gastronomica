@@ -1,0 +1,50 @@
+# Entornos, construcción y cachés
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Configuración y credenciales locales
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Entradas y salidas de ejecución; se documentan en sus README
+datos/originales/*
+!datos/originales/README.md
+datos/derivados/*
+!datos/derivados/README.md
+resultados/*
+!resultados/README.md
+respaldos/
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.log
+
+# Archivos de edicion y multimedia
+*.doc
+*.docx
+*.pdf
+*.mp4
+*.mov
+*.bak
+~$*
