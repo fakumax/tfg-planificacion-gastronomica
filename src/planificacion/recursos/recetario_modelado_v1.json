@@ -1,0 +1,1451 @@
+{
+  "version": "1.0",
+  "fecha": "2026-09-28",
+  "estado": "seleccion_y_fichas_modeladas_cerradas_para_TP2",
+  "alcance": "Siete recetas del escenario; no valida continuidad de series ni entrenamiento",
+  "recetas": [
+    {
+      "producto_id": "P01",
+      "producto_original": "김치찌개",
+      "nombre_modelado": "Guiso de kimchi y cerdo con arroz",
+      "receta_id": "R01",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S01"
+      ],
+      "adaptacion": "Se elige cerdo; se fijan medidas en g/ml, agua en lugar de caldo y gochugaru sin rango. Kimchi y jugo son insumos separados. No se asumen equivalencias universales de tazas a gramos. Arroz y kimchi de acompañamiento son una decisión del escenario.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 200,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "cerdo",
+          "cantidad": 60,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "tofu",
+          "cantidad": 85,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 10,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 3,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "gochugaru",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_neutro",
+          "cantidad": 7.5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "jugo_kimchi",
+          "cantidad": 60,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 300,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S01"
+          ]
+        },
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 140,
+          "unidad": "ml",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 365,
+      "dias_sin_fila_2025": 0,
+      "cantidad_vendida_2025": 5261,
+      "etiquetas_ingles_fuente": [
+        "Pork and Kimchi Stew"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P02",
+      "producto_original": "한국식 조찬",
+      "nombre_modelado": "Desayuno modelado: arroz, huevo, sopa de tofu, kimchi y nori",
+      "receta_id": "R02",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [],
+      "adaptacion": "Composición propia del escenario; el nombre Korean Breakfast no informa sus componentes. No se atribuye esta composición a High1 ni a una receta externa. Ración definida para cubrir desayuno, sopa y acompañamientos, con insumos compartidos.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 340,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "huevo",
+          "cantidad": 50,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "tofu",
+          "cantidad": 60,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "doenjang",
+          "cantidad": 10,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 10,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_neutro",
+          "cantidad": 5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "nori",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 363,
+      "dias_sin_fila_2025": 2,
+      "cantidad_vendida_2025": 4202,
+      "etiquetas_ingles_fuente": [
+        "Korean Breakfast"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P03",
+      "producto_original": "전복 된장찌개",
+      "nombre_modelado": "Guiso de doenjang con abulón y arroz",
+      "receta_id": "R03",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S04"
+      ],
+      "adaptacion": "Se sustituye la mezcla de mariscos de la referencia por 60 g de abulón limpio. Se elige agua, champiñón y ají verde. Todas las cantidades son parámetros del escenario, no conversiones literales de la receta doméstica. Se agregan arroz y kimchi.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "abulon",
+          "cantidad": 60,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "tofu",
+          "cantidad": 120,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "zucchini",
+          "cantidad": 50,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "hongos",
+          "cantidad": 25,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla",
+          "cantidad": 25,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "rabano",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "aji_verde",
+          "cantidad": 5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 10,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 350,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "doenjang",
+          "cantidad": 20,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "gochugaru",
+          "cantidad": 1,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 3,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "vinagre",
+          "cantidad": 2.5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S04"
+          ]
+        },
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 140,
+          "unidad": "ml",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 361,
+      "dias_sin_fila_2025": 4,
+      "cantidad_vendida_2025": 2463,
+      "etiquetas_ingles_fuente": [
+        "Baby abalone &Black soybean, Bean paste soup"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P04",
+      "producto_original": "간고등어정식",
+      "nombre_modelado": "Caballa asada con arroz y kimchi",
+      "receta_id": "R04",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S05"
+      ],
+      "adaptacion": "Se elige asado sin harina. Se usa filete limpio de 150 g y se añaden 2 g de sal; no se convierte el peso del pescado entero de la fuente en peso neto. El menú se define como pescado, arroz y kimchi, sin guarniciones implícitas.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "caballa",
+          "cantidad": 150,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S05"
+          ]
+        },
+        {
+          "ingrediente_id": "sal",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S05"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_neutro",
+          "cantidad": 5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S05"
+          ]
+        },
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 140,
+          "unidad": "ml",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 354,
+      "dias_sin_fila_2025": 11,
+      "cantidad_vendida_2025": 1653,
+      "etiquetas_ingles_fuente": [
+        "Grilled Salted Mackerel"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P05",
+      "producto_original": "낙지볶음소면",
+      "nombre_modelado": "Pulpo salteado con fideos somen",
+      "receta_id": "R05",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S03"
+      ],
+      "adaptacion": "La fuente no fija porciones. Se define una ración propia de 150 g de pulpo limpio y 70 g de somen seco, con salsa y vegetales fijados. No se afirma que el lote publicado rinda tres porciones. Al partir de pulpo limpio, no se consumen sal ni harina para limpieza en esta ficha. Agua de cocción incluida como servicio sin alerta.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "pulpo",
+          "cantidad": 150,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "somen",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla",
+          "cantidad": 35,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "aji_verde",
+          "cantidad": 8,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "aji_rojo",
+          "cantidad": 7,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_neutro",
+          "cantidad": 5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_sesamo",
+          "cantidad": 4,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "salsa_soja",
+          "cantidad": 2,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "gochujang",
+          "cantidad": 6,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "gochugaru",
+          "cantidad": 4.5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "azucar",
+          "cantidad": 1.5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 3,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "jengibre",
+          "cantidad": 1,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "pimienta",
+          "cantidad": 0.1,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S03"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 700,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 349,
+      "dias_sin_fila_2025": 16,
+      "cantidad_vendida_2025": 1239,
+      "etiquetas_ingles_fuente": [
+        "Sauteed Small Octopus with Noodles"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P06",
+      "producto_original": "한우 불고기 정식",
+      "nombre_modelado": "Bulgogi vacuno con arroz y kimchi",
+      "receta_id": "R06",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S02"
+      ],
+      "adaptacion": "Se conservan algunas cantidades explícitas del lote de cuatro porciones divididas por cuatro. Pera, cebolla, verdeo, hongos, pimienta y aceite de cocción se fijan como supuestos. Se agregan arroz y kimchi. El catálogo usa carne vacuna genérica y no certifica origen Hanwoo.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "vacuno",
+          "cantidad": 100,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "pera",
+          "cantidad": 15,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla",
+          "cantidad": 20,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 20,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "hongos",
+          "cantidad": 15,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "salsa_soja",
+          "cantidad": 15,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "azucar",
+          "cantidad": 3.75,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 3.75,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "sesamo",
+          "cantidad": 3.75,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_sesamo",
+          "cantidad": 3.75,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "cantidad_publicada_S02_dividida_por_4",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "pimienta",
+          "cantidad": 0.1,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_neutro",
+          "cantidad": 3,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S02"
+          ]
+        },
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 140,
+          "unidad": "ml",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 346,
+      "dias_sin_fila_2025": 19,
+      "cantidad_vendida_2025": 1237,
+      "etiquetas_ingles_fuente": [
+        "Traditional Korean Beef \"Bulgogi\" Pan-fried"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    },
+    {
+      "producto_id": "P07",
+      "producto_original": "더덕 흑돼지구이",
+      "nombre_modelado": "Cerdo con deodeok, arroz y kimchi",
+      "receta_id": "R07",
+      "version": "1.0",
+      "rendimiento_unidades": 1,
+      "tipo": "receta_modelada",
+      "local_original": "In Room Dining(K)",
+      "anio_vinculo": 2025,
+      "fuentes": [
+        "S06",
+        "S07"
+      ],
+      "adaptacion": "Composición propia que combina referencias de cerdo adobado y deodeok asado; no es una receta publicada del plato completo. Se fijan 150 g de cerdo y 50 g de deodeok. Se usa cerdo genérico sin certificar raza negra. Se eligen manzana y miel; no se reproduce la proporción ambigua de salsa de S07. Arroz y kimchi son acompañamientos modelados.",
+      "ingredientes": [
+        {
+          "ingrediente_id": "cerdo",
+          "cantidad": 150,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "deodeok",
+          "cantidad": 50,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla",
+          "cantidad": 30,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "cebolla_verdeo",
+          "cantidad": 10,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "gochujang",
+          "cantidad": 20,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "gochugaru",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "ajo",
+          "cantidad": 5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "jengibre",
+          "cantidad": 2,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "salsa_soja",
+          "cantidad": 10,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "azucar",
+          "cantidad": 5,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "miel",
+          "cantidad": 3,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "manzana",
+          "cantidad": 15,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "mirin",
+          "cantidad": 10,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06"
+          ]
+        },
+        {
+          "ingrediente_id": "aceite_sesamo",
+          "cantidad": 5,
+          "unidad": "ml",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S06",
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "sesamo",
+          "cantidad": 3,
+          "unidad": "g",
+          "componente": "principal",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "S07"
+          ]
+        },
+        {
+          "ingrediente_id": "arroz",
+          "cantidad": 70,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "agua",
+          "cantidad": 140,
+          "unidad": "ml",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        },
+        {
+          "ingrediente_id": "kimchi",
+          "cantidad": 40,
+          "unidad": "g",
+          "componente": "acompanamiento",
+          "origen_cantidad": "supuesto_de_diseno",
+          "fuentes_composicion": [
+            "MODELO"
+          ]
+        }
+      ],
+      "dias_con_fila_2025": 320,
+      "dias_sin_fila_2025": 45,
+      "cantidad_vendida_2025": 860,
+      "etiquetas_ingles_fuente": [
+        "Grilled Black Pork and Deodeok"
+      ],
+      "equivalencia_unidad": "1 unidad vendida se representa como 1 ración modelada; supuesto, no tamaño de porción comprobado de High1"
+    }
+  ],
+  "ingredientes": [
+    {
+      "ingrediente_id": "arroz",
+      "nombre": "Arroz blanco crudo",
+      "unidad": "g",
+      "estado_stock": "Seco, listo para cocer",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "agua",
+      "nombre": "Agua de proceso",
+      "unidad": "ml",
+      "estado_stock": "Agua incorporada o utilizada para cocción",
+      "control_stock": false
+    },
+    {
+      "ingrediente_id": "kimchi",
+      "nombre": "Kimchi comprado",
+      "unidad": "g",
+      "estado_stock": "Listo para usar, escurrido; jugo separado",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "jugo_kimchi",
+      "nombre": "Jugo de kimchi",
+      "unidad": "ml",
+      "estado_stock": "Stock separado del kimchi escurrido",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "cerdo",
+      "nombre": "Carne de cerdo",
+      "unidad": "g",
+      "estado_stock": "Cruda, limpia, sin hueso",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "vacuno",
+      "nombre": "Carne vacuna",
+      "unidad": "g",
+      "estado_stock": "Cruda, limpia, sin hueso",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "tofu",
+      "nombre": "Tofu",
+      "unidad": "g",
+      "estado_stock": "Escurrido, listo para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "cebolla_verdeo",
+      "nombre": "Cebolla de verdeo",
+      "unidad": "g",
+      "estado_stock": "Limpia",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "ajo",
+      "nombre": "Ajo",
+      "unidad": "g",
+      "estado_stock": "Pelado",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "gochugaru",
+      "nombre": "Gochugaru",
+      "unidad": "g",
+      "estado_stock": "Ají coreano seco",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "aceite_neutro",
+      "nombre": "Aceite vegetal",
+      "unidad": "ml",
+      "estado_stock": "Listo para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "aceite_sesamo",
+      "nombre": "Aceite de sésamo",
+      "unidad": "ml",
+      "estado_stock": "Listo para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "huevo",
+      "nombre": "Huevo líquido",
+      "unidad": "g",
+      "estado_stock": "Sin cáscara, listo para cocinar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "doenjang",
+      "nombre": "Doenjang comprado",
+      "unidad": "g",
+      "estado_stock": "Pasta de soja fermentada",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "nori",
+      "nombre": "Alga nori comprada",
+      "unidad": "g",
+      "estado_stock": "Seca, lista para servir",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "abulon",
+      "nombre": "Abulón",
+      "unidad": "g",
+      "estado_stock": "Carne cruda limpia, sin concha ni vísceras",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "zucchini",
+      "nombre": "Zucchini",
+      "unidad": "g",
+      "estado_stock": "Limpio",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "hongos",
+      "nombre": "Hongos comestibles frescos",
+      "unidad": "g",
+      "estado_stock": "Limpios, especie única fijada: champiñón",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "cebolla",
+      "nombre": "Cebolla",
+      "unidad": "g",
+      "estado_stock": "Pelada",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "rabano",
+      "nombre": "Rábano coreano",
+      "unidad": "g",
+      "estado_stock": "Limpio",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "aji_verde",
+      "nombre": "Ají verde fresco",
+      "unidad": "g",
+      "estado_stock": "Limpio y sin semillas",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "aji_rojo",
+      "nombre": "Ají rojo fresco",
+      "unidad": "g",
+      "estado_stock": "Limpio y sin semillas",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "vinagre",
+      "nombre": "Vinagre",
+      "unidad": "ml",
+      "estado_stock": "Listo para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "caballa",
+      "nombre": "Filete de caballa",
+      "unidad": "g",
+      "estado_stock": "Crudo, limpio, sin espinas y sin salar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "sal",
+      "nombre": "Sal",
+      "unidad": "g",
+      "estado_stock": "Lista para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "pulpo",
+      "nombre": "Pulpo pequeño",
+      "unidad": "g",
+      "estado_stock": "Crudo, limpio, sin vísceras",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "somen",
+      "nombre": "Fideos somen",
+      "unidad": "g",
+      "estado_stock": "Peso seco",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "salsa_soja",
+      "nombre": "Salsa de soja",
+      "unidad": "ml",
+      "estado_stock": "Lista para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "gochujang",
+      "nombre": "Gochujang comprado",
+      "unidad": "g",
+      "estado_stock": "Pasta de ají",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "azucar",
+      "nombre": "Azúcar",
+      "unidad": "g",
+      "estado_stock": "Seca",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "jengibre",
+      "nombre": "Jengibre",
+      "unidad": "g",
+      "estado_stock": "Pelado",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "pimienta",
+      "nombre": "Pimienta molida",
+      "unidad": "g",
+      "estado_stock": "Seca",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "pera",
+      "nombre": "Pera",
+      "unidad": "g",
+      "estado_stock": "Pulpa sin piel ni semillas",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "sesamo",
+      "nombre": "Semillas de sésamo",
+      "unidad": "g",
+      "estado_stock": "Listas para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "deodeok",
+      "nombre": "Raíz de deodeok",
+      "unidad": "g",
+      "estado_stock": "Pelada y limpia",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "miel",
+      "nombre": "Miel",
+      "unidad": "g",
+      "estado_stock": "Lista para usar",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "manzana",
+      "nombre": "Manzana",
+      "unidad": "g",
+      "estado_stock": "Pulpa sin piel ni semillas",
+      "control_stock": true
+    },
+    {
+      "ingrediente_id": "mirin",
+      "nombre": "Mirin",
+      "unidad": "ml",
+      "estado_stock": "Listo para usar",
+      "control_stock": true
+    }
+  ],
+  "fuentes": [
+    {
+      "fuente_id": "S01",
+      "autor": "Hyosun / Korean Bapsang",
+      "titulo": "Kimchi Jjigae (Kimchi Stew)",
+      "url": "https://www.koreanbapsang.com/kimchi-jjigae-kimchi-stew/",
+      "archivo": "originales/kb_kimchi.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "693d0397fd51d80bd6ff6d9c08e634de76139f946bbcec863a65d2df34e1c5bc",
+      "observacion": "2 porciones; medidas domésticas y alternativas"
+    },
+    {
+      "fuente_id": "S02",
+      "autor": "Korean Culture / K-Food (2013)",
+      "titulo": "Bulgogi, p. 94",
+      "url": "https://www.korean-culture.org/ebook/access/ecatalogt.jsp?Dir=293&callmode=normal&catimage=&eclang=en&start=48&um=s",
+      "archivo": "originales/kocis_bulgogi.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "be319f821e56c60a7b0a5ea3591592cf66c68b9be8b85b8de897906db5843321",
+      "observacion": "4 porciones; vista parcial del libro"
+    },
+    {
+      "fuente_id": "S03",
+      "autor": "Yoon Sojung / Korea.net / ITKF",
+      "titulo": "Korean recipes: spicy stir-fried small octopus, nakji bokkeum",
+      "url": "https://www.korea.net/NewsFocus/Culture/view?articleId=132155",
+      "archivo": "originales/korea_nakji.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "02b7207f3a417cb60ceb43dfbffaf26c6d54e40987b7035d8de3957a583e65f0",
+      "observacion": "Sin rendimiento explícito; sin fideos"
+    },
+    {
+      "fuente_id": "S04",
+      "autor": "Hyosun / Korean Bapsang",
+      "titulo": "Seafood Doenjang Jjigae",
+      "url": "https://www.koreanbapsang.com/seafood-doenjang-jjigae/",
+      "archivo": "originales/kb_seafood_doenjang.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "a9b9e45021f62296ef0f6c8b60c36910a0f7b4bc654336fe912308d8d0a1d7d6",
+      "observacion": "2 porciones; mezcla de mariscos, no receta específica de abulón"
+    },
+    {
+      "fuente_id": "S05",
+      "autor": "Maangchi",
+      "titulo": "Grilled mackerel (Godeungeo-gui)",
+      "url": "https://www.maangchi.com/recipe/godeungeo-gui",
+      "archivo": "lectura_maangchi_caballa.md",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "34fc4cd19d7d642729780ec01016f5492ff1ca9bd55eb8212b95973a7a2495fc",
+      "observacion": "Lectura web; HTML no descargado por 403; ficha propia de lectura"
+    },
+    {
+      "fuente_id": "S06",
+      "autor": "Hyosun / Korean Bapsang",
+      "titulo": "Jeyuk Bokkeum (Spicy Pork Bulgogi)",
+      "url": "https://www.koreanbapsang.com/dweji-bulgogi-korean-spicy-pork-bbq/",
+      "archivo": "originales/kb_pork_bulgogi.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "0d7103e47dd9aa3cd913fb92afdf7e55e3a243122d0456a630b1ce1288e9a0d7",
+      "observacion": "4 porciones; referencia para adobo de cerdo, sin deodeok"
+    },
+    {
+      "fuente_id": "S07",
+      "autor": "Rural Development Administration / Korean Traditional Knowledge Portal",
+      "titulo": "deodeok Gui (Sweet and Spicy Grilled Deodeok Root)",
+      "url": "https://koreantk.com/ktkp2014/food/food-view.view?foodCd=TF10003302",
+      "archivo": "originales/ktkp_deodeok.html",
+      "fecha_consulta": "2026-09-28",
+      "sha256": "fbd6612a5fbd41ad90263cacaf0b0fd1515d83138d6893d971cec588927216ad",
+      "observacion": "Sin porciones; la proporción de salsa en el método no coincide directamente con la lista por peso; solo referencia de composición"
+    }
+  ]
+}
