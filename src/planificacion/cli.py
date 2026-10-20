@@ -25,6 +25,7 @@ from .dominio.pronosticos import Persistencia
 from .aplicacion.experimento import ejecutar_seleccion, ejecutar_prueba
 from .infraestructura.entorno import capturar_codigo, capturar_entorno
 from .infraestructura.motor_experimento import ejecutar_tareas
+from .infraestructura.exportacion import exportar_evaluacion
 
 
 def informar_progreso(producto: str, completados: int, total: int) -> None:
@@ -96,6 +97,10 @@ def main(argv: list[str] | None = None) -> int:
         experimento.add_argument("--trabajadores", type=int, choices=range(1, 5), default=2)
         if nombre == "evaluar-modelos":
             experimento.add_argument("--seleccion", required=True)
+    exportar = comandos.add_parser("exportar-evaluacion", help="Exportar evidencia a una carpeta nueva")
+    exportar.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    exportar.add_argument("--ejecucion", required=True)
+    exportar.add_argument("--directorio", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -161,6 +166,8 @@ def main(argv: list[str] | None = None) -> int:
                 salida = resumen_experimento(ejecutar_seleccion(**opciones))
             else:
                 salida = resumen_experimento(ejecutar_prueba(**opciones, seleccion_id=args.seleccion))
+        elif args.comando == "exportar-evaluacion":
+            salida = exportar_evaluacion(SQLiteEjecuciones(args.base), args.ejecucion, args.directorio)
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
