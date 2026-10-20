@@ -22,6 +22,21 @@ from .infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
 from .aplicacion.planificacion import planificar
 from .configuracion import recetario_configurado, recurso_json
 from .dominio.pronosticos import Persistencia
+from .aplicacion.experimento import ejecutar_seleccion, ejecutar_prueba
+from .infraestructura.entorno import capturar_codigo, capturar_entorno
+from .infraestructura.motor_experimento import ejecutar_tareas
+
+
+def informar_progreso(producto: str, completados: int, total: int) -> None:
+    print(f"Producto {producto} completado ({completados}/{total})", file=sys.stderr, flush=True)
+
+
+def resumen_experimento(registro: dict) -> dict:
+    return {"ejecucion_id": registro["ejecucion_id"], "tipo": registro["tipo"],
+            "huella_contenido": registro["huella_contenido"], "rendimiento": registro["rendimiento"],
+            "productos": [{k: r[k] for k in ("producto_id", "parametros", "estado", "estado_configuracion",
+                                              "cobertura_validacion") if k in r}
+                          for r in registro["resultado"]["productos"]]}
 
 
 def fecha_argumento(valor: str) -> date:
@@ -73,6 +88,14 @@ def main(argv: list[str] | None = None) -> int:
     planificacion.add_argument("--metodo", choices=["persistencia"], default="persistencia")
     planificacion.add_argument("--escenario", type=Path, required=True)
     planificacion.add_argument("--recetario", type=Path)
+    for nombre, ayuda in (("seleccionar-modelos", "Conservar la selección por validación"),
+                          ("evaluar-modelos", "Comparar con una selección cerrada previamente")):
+        experimento = comandos.add_parser(nombre, help=ayuda)
+        experimento.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+        experimento.add_argument("--importacion", required=True)
+        experimento.add_argument("--trabajadores", type=int, choices=range(1, 5), default=2)
+        if nombre == "evaluar-modelos":
+            experimento.add_argument("--seleccion", required=True)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -83,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
                                  "preparación diaria", "importación SQLite", "consulta histórica",
                                  "recetario versionado", "balance y alertas", "historial de ejecuciones",
                                  "planificación integrada con persistencia"],
-                "pendiente": ["Random Forest y referencia semanal", "interfaz", "evaluación"],
+                "pendiente": ["interfaz", "experimento real y evidencia de cierre"],
                 "protocolo": recurso_json("protocolo_tp3_v1.json"),
             }
         elif args.comando == "verificar-entradas":
@@ -128,6 +151,16 @@ def main(argv: list[str] | None = None) -> int:
             salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), Persistencia(),
                                  recetario_configurado(args.recetario), args.importacion, args.origen,
                                  leer_escenario(args.escenario))
+        elif args.comando in ("seleccionar-modelos", "evaluar-modelos"):
+            opciones = {"ventas": SQLiteVentas(args.base), "registro": SQLiteEjecuciones(args.base),
+                       "importacion_id": args.importacion, "protocolo": recurso_json("protocolo_tp3_v1.json"),
+                       "ejecutor": ejecutar_tareas, "trabajadores": args.trabajadores,
+                       "progreso": informar_progreso,
+                       "metadatos": {"entorno": capturar_entorno(), "codigo": capturar_codigo()}}
+            if args.comando == "seleccionar-modelos":
+                salida = resumen_experimento(ejecutar_seleccion(**opciones))
+            else:
+                salida = resumen_experimento(ejecutar_prueba(**opciones, seleccion_id=args.seleccion))
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
