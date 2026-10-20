@@ -15,6 +15,12 @@ from .entradas import verificar_entradas
 from .aplicacion.ventas import consultar_ventas
 from .infraestructura.csv_ventas import preparar_ventas
 from .infraestructura.sqlite_ventas import SQLiteVentas
+from .aplicacion.balance import ejecutar_balance
+from .dominio.calendario import fecha_iso
+from .dominio.serializacion import convertir
+from .infraestructura.escenarios import leer_escenario, leer_plan
+from .infraestructura.recetario import cargar_recetario
+from .infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
 
 
 def recurso_json(nombre: str) -> dict:
@@ -23,10 +29,7 @@ def recurso_json(nombre: str) -> dict:
 
 def fecha_argumento(valor: str) -> date:
     try:
-        fecha = date.fromisoformat(valor)
-        if fecha.isoformat() != valor:
-            raise ValueError
-        return fecha
+        return fecha_iso(valor)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("Usar una fecha válida AAAA-MM-DD") from exc
 
@@ -56,6 +59,16 @@ def main(argv: list[str] | None = None) -> int:
     consultar.add_argument("--producto", required=True)
     consultar.add_argument("--desde", type=fecha_argumento, required=True)
     consultar.add_argument("--hasta", type=fecha_argumento, required=True)
+    balance = comandos.add_parser("calcular-balance", help="Calcular y conservar un plan manual modelado")
+    balance.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    balance.add_argument("--plan", type=Path, required=True)
+    balance.add_argument("--escenario", type=Path, required=True)
+    balance.add_argument("--recetario", type=Path)
+    ejecuciones = comandos.add_parser("listar-ejecuciones", help="Listar balances y consultas conservados")
+    ejecuciones.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    ejecucion = comandos.add_parser("ver-ejecucion", help="Recuperar entradas y resultados de una ejecución")
+    ejecucion.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
+    ejecucion.add_argument("--ejecucion", required=True)
     args = parser.parse_args(argv)
     try:
         if args.comando == "estado":
@@ -63,8 +76,9 @@ def main(argv: list[str] | None = None) -> int:
                 "version": __version__,
                 "python": platform.python_version(),
                 "implementado": ["verificación de originales en modo lectura",
-                                 "preparación diaria", "importación SQLite", "consulta histórica"],
-                "pendiente": ["balance", "modelos", "interfaz", "evaluación"],
+                                 "preparación diaria", "importación SQLite", "consulta histórica",
+                                 "recetario versionado", "balance y alertas", "historial de ejecuciones"],
+                "pendiente": ["pronósticos", "interfaz", "evaluación"],
                 "protocolo": recurso_json("protocolo_tp3_v1.json"),
             }
         elif args.comando == "verificar-entradas":
@@ -90,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
                       "fuentes_auditadas": [asdict(f) for f in lote.fuentes]}
         elif args.comando == "listar-importaciones":
             salida = {"importaciones": SQLiteVentas(args.base).listar_importaciones()}
-        else:
+        elif args.comando == "consultar-ventas":
             consulta = consultar_ventas(SQLiteVentas(args.base), args.importacion, args.producto,
                                          args.desde, args.hasta)
             salida = {"importacion_id": args.importacion, **asdict(consulta),
@@ -98,8 +112,19 @@ def main(argv: list[str] | None = None) -> int:
                                   "dias_sin_fila": consulta.dias_sin_fila,
                                   "total_observado": consulta.total_observado,
                                   "incompleta": consulta.incompleta}}
+        elif args.comando == "calcular-balance":
+            ruta = args.recetario or files("planificacion").joinpath("recursos", "recetario_modelado_v1.json")
+            huella = recurso_json("protocolo_tp3_v1.json")["recetario"]["archivos"]["recetario_modelado_v1.json"]
+            recetario = cargar_recetario(ruta, huella)
+            plan, fechas = leer_plan(args.plan)
+            salida = ejecutar_balance(SQLiteEjecuciones(args.base), recetario, plan,
+                                       leer_escenario(args.escenario), fechas)
+        elif args.comando == "listar-ejecuciones":
+            salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
+        else:
+            salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:
         print(f"No se completó la operación: {exc}", file=sys.stderr)
         return 2
-    print(json.dumps(salida, ensure_ascii=False, indent=2, default=lambda d: d.isoformat()))
+    print(json.dumps(salida, ensure_ascii=False, indent=2, default=convertir))
     return 0

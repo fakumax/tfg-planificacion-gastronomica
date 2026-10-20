@@ -1,0 +1,200 @@
+{
+  "tipo": "sintetico",
+  "nombre": "Demostración de faltante y entrada posterior",
+  "version": "1",
+  "existencias": [
+    {
+      "insumo_id": "arroz",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "kimchi",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "jugo_kimchi",
+      "cantidad": "0",
+      "unidad": "ml"
+    },
+    {
+      "insumo_id": "cerdo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "vacuno",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "tofu",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "cebolla_verdeo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "ajo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "gochugaru",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "aceite_neutro",
+      "cantidad": "0",
+      "unidad": "ml"
+    },
+    {
+      "insumo_id": "aceite_sesamo",
+      "cantidad": "0",
+      "unidad": "ml"
+    },
+    {
+      "insumo_id": "huevo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "doenjang",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "nori",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "abulon",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "zucchini",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "hongos",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "cebolla",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "rabano",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "aji_verde",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "aji_rojo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "vinagre",
+      "cantidad": "0",
+      "unidad": "ml"
+    },
+    {
+      "insumo_id": "caballa",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "sal",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "pulpo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "somen",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "salsa_soja",
+      "cantidad": "0",
+      "unidad": "ml"
+    },
+    {
+      "insumo_id": "gochujang",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "azucar",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "jengibre",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "pimienta",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "pera",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "sesamo",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "deodeok",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "miel",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "manzana",
+      "cantidad": "0",
+      "unidad": "g"
+    },
+    {
+      "insumo_id": "mirin",
+      "cantidad": "0",
+      "unidad": "ml"
+    }
+  ],
+  "entradas": [
+    {
+      "insumo_id": "cerdo",
+      "fecha": "2025-11-02",
+      "cantidad": "600",
+      "unidad": "g"
+    }
+  ]
+}
