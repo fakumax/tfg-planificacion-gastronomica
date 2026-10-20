@@ -90,6 +90,18 @@ class BalanceTests(unittest.TestCase):
             with self.subTest(existencias=existencias), self.assertRaises(ValueError):
                 self.calcular(escenario=replace(bueno, existencias=existencias))
 
+    def test_error_de_existencia_identifica_el_insumo_faltante_o_incompatible(self):
+        for existencias in ((), (Existencia('arroz', Decimal(1), 'ml'),)):
+            with self.subTest(existencias=existencias), self.assertRaisesRegex(ValueError, 'arroz'):
+                self.calcular(escenario=replace(escenario_sintetico(), existencias=existencias))
+
+    def test_escenarios_de_distinto_periodo_conservan_identidades_distintas(self):
+        primero = self.calcular()
+        fechas = tuple(f+timedelta(days=7) for f in FECHAS)
+        plan = tuple(replace(p, fecha=p.fecha+timedelta(days=7)) for p in plan_sintetico())
+        segundo = calcular_balance(self.recetario, plan, escenario_sintetico(), fechas)
+        self.assertNotEqual(primero.escenario_id, segundo.escenario_id)
+
     def test_entrada_fuera_de_horizonte_desconocida_o_con_unidad_distinta_bloquea(self):
         for entrada in (EntradaPrevista("arroz", FECHAS[-1] + timedelta(days=1), Decimal(1), "g"),
                         EntradaPrevista("otro", FECHAS[0], Decimal(1), "g"),

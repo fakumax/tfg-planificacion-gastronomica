@@ -108,12 +108,12 @@ def calcular_balance(recetario: Recetario, plan: tuple[CantidadPlanificada, ...]
     stock = {}
     for e in escenario.existencias:
         if e.insumo_id not in controlados or e.insumo_id in stock:
-            raise ValueError("Existencia de insumo desconocido, sin control o duplicado")
+            raise ValueError(f"{e.insumo_id}: existencia de insumo desconocido, sin control o duplicado")
         if e.unidad != controlados[e.insumo_id].unidad:
-            raise ValueError("Unidades de existencia incompatibles")
+            raise ValueError(f"{e.insumo_id}: unidades de existencia incompatibles; se requiere {controlados[e.insumo_id].unidad}")
         stock[e.insumo_id] = decimal_no_negativo(e.cantidad, "existencia inicial")
     if set(stock) != set(controlados):
-        raise ValueError("Faltan existencias iniciales explícitas de insumos controlados")
+        raise ValueError("Faltan existencias iniciales explícitas de: " + ', '.join(sorted(set(controlados)-set(stock))))
     entradas, identidades = {}, set()
     for e in escenario.entradas:
         texto(e.entrada_id, "identificador de reposición")
@@ -148,5 +148,6 @@ def calcular_balance(recetario: Recetario, plan: tuple[CantidadPlanificada, ...]
                     i.insumo_id, previa.primera_fecha if previa else fecha,
                     previa.deficit_inicial if previa else -saldo,
                     max(previa.maximo_deficit, -saldo) if previa else -saldo, i.unidad)
-    return ResultadoBalance(recetario.sha256, escenario.identificador, tuple(consumos),
+    identidad = hashlib.sha256(f'{recetario.sha256}|{fechas[0]}|{escenario.identificador}'.encode('utf-8')).hexdigest()
+    return ResultadoBalance(recetario.sha256, identidad, tuple(consumos),
                              tuple(saldos), tuple(alertas[k] for k in sorted(alertas)))
