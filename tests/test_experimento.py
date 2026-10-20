@@ -1,8 +1,10 @@
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 from planificacion.aplicacion.experimento import ejecutar_prueba, ejecutar_seleccion
+from planificacion.aplicacion.experimento import configuracion_planificacion
 from planificacion.configuracion import recurso_json
 from planificacion.dominio.parametros import CONFIGURACION_PREFIJADA
 from planificacion.infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
@@ -79,3 +81,26 @@ class ExperimentoTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "configuración"):
             ejecutar_prueba(self.ventas, self.registro, self.identidad, seleccion["ejecucion_id"],
                              self.protocolo, cambiar)
+
+    def test_planificacion_recupera_la_seleccion_con_su_identidad(self):
+        s = self.seleccionar()
+        configuraciones, estados, referencia = configuracion_planificacion(self.ventas, self.registro,
+            self.identidad, s["ejecucion_id"], self.protocolo, date(2025, 11, 1), {})
+        self.assertEqual(len(configuraciones), 7)
+        self.assertEqual(set(estados.values()), {"prefijada_validacion_insuficiente"})
+        self.assertEqual(referencia["seleccion_id"], s["ejecucion_id"])
+
+    def test_no_usa_una_seleccion_posterior_al_origen(self):
+        s = self.seleccionar()
+        with self.assertRaisesRegex(ValueError, "período"):
+            configuracion_planificacion(self.ventas, self.registro, self.identidad,
+                s["ejecucion_id"], self.protocolo, date(2025, 9, 30), {})
+
+    def test_entorno_y_nucleo_cambiados_no_se_reutilizan_silenciosamente(self):
+        s = ejecutar_seleccion(self.ventas, self.registro, self.identidad, self.protocolo,
+            ejecutor_sintetico, metadatos={"entorno": {"python": "prueba"}, "codigo": {"huella_nucleo_numerico": "a"}})
+        for metadatos in ({"entorno": {"python": "otro"}},
+                           {"entorno": {"python": "prueba"}, "codigo": {"huella_nucleo_numerico": "b"}}):
+            with self.assertRaises(ValueError):
+                configuracion_planificacion(self.ventas, self.registro, self.identidad,
+                    s["ejecucion_id"], self.protocolo, date(2025, 11, 1), metadatos)

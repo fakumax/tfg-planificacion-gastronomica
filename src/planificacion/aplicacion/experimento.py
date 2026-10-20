@@ -1,12 +1,14 @@
 """Orquestación con selección conservada antes de evaluar la prueba reservada."""
 
 from collections.abc import Callable
+from datetime import date
 from time import perf_counter
 from typing import Protocol
 
 from .balance import RegistroEjecuciones
 from .. import __version__
 from ..dominio.parametros import validar_configuracion
+from ..dominio.calendario import fecha_iso
 from ..dominio.protocolo import validar_protocolo
 from ..dominio.serializacion import normalizar
 from ..dominio.ventas import LoteVentas
@@ -40,9 +42,9 @@ def _validar_resultados(resultados: list[dict], lote: LoteVentas) -> list[dict]:
 def _contexto(lote: LoteVentas, ejecutor: Callable, trabajadores: int, metadatos: dict) -> dict:
     if type(trabajadores) is not int or not 1 <= trabajadores <= 4:
         raise ValueError("Elegir entre uno y cuatro trabajadores")
-    return {"importacion_id": lote.identificador, "protocolo_sha256": lote.protocolo_sha256,
+    return {**metadatos, "importacion_id": lote.identificador, "protocolo_sha256": lote.protocolo_sha256,
             "trabajadores": trabajadores, "ejecutor": f"{ejecutor.__module__}.{ejecutor.__qualname__}",
-            **metadatos}
+            }
 
 
 def _tareas(lote: LoteVentas, protocolo: dict, accion: str) -> list[dict]:
@@ -70,27 +72,50 @@ def ejecutar_seleccion(ventas: FuenteExperimento, registro: RegistroEjecuciones,
     return registro.recuperar(identidad)
 
 
-def ejecutar_prueba(ventas: FuenteExperimento, registro: RegistroEjecuciones, importacion_id: str,
-                     seleccion_id: str, protocolo: dict, ejecutor: Callable,
-                     trabajadores: int = 1, progreso=None, metadatos: dict | None = None) -> dict:
-    lote = _preparar(ventas, importacion_id, protocolo)
+def _seleccion_comprobada(lote: LoteVentas, registro: RegistroEjecuciones, seleccion_id: str,
+                          protocolo: dict, metadatos: dict) -> tuple[dict, dict]:
     seleccion = registro.recuperar(seleccion_id)
     if seleccion["tipo"] != "seleccion_modelos":
         raise ValueError("Se requiere una selección cerrada previamente")
-    if (seleccion["contexto"]["importacion_id"] != importacion_id
+    if (seleccion["contexto"]["importacion_id"] != lote.identificador
             or seleccion["entradas"]["lote"] != normalizar(lote)):
         raise ValueError("La selección pertenece a otra importación o conjunto de datos")
     if seleccion["entradas"]["protocolo"] != protocolo:
         raise ValueError("La selección utiliza otro protocolo")
-    contexto = _contexto(lote, ejecutor, trabajadores, metadatos or {})
     anterior = seleccion["contexto"]
-    if contexto.get("entorno") != anterior.get("entorno"):
+    if metadatos.get("entorno") != anterior.get("entorno"):
         raise ValueError("El entorno cambió respecto de la selección; registrar una nueva selección")
-    if contexto.get("codigo", {}).get("huella_nucleo_numerico") != anterior.get("codigo", {}).get("huella_nucleo_numerico"):
+    if metadatos.get("codigo", {}).get("huella_nucleo_numerico") != anterior.get("codigo", {}).get("huella_nucleo_numerico"):
         raise ValueError("El núcleo numérico cambió respecto de la selección")
     configuraciones = {r["producto_id"]: r for r in seleccion["resultado"]["productos"]}
-    if set(configuraciones) != {p.producto_id for p in lote.productos}:
+    if len(configuraciones) != len(seleccion["resultado"]["productos"]) or set(configuraciones) != {p.producto_id for p in lote.productos}:
         raise ValueError("La selección está incompleta")
+    for r in configuraciones.values():
+        validar_configuracion(r["parametros"])
+        if r["estado"] not in ("seleccionada_por_validacion", "prefijada_validacion_insuficiente"):
+            raise ValueError("Estado de selección no reconocido")
+    return seleccion, configuraciones
+
+
+def configuracion_planificacion(ventas: FuenteExperimento, registro: RegistroEjecuciones,
+                                importacion_id: str, seleccion_id: str, protocolo: dict,
+                                origen: date, metadatos: dict) -> tuple[dict, dict, dict]:
+    lote = _preparar(ventas, importacion_id, protocolo)
+    inicio, fin = map(fecha_iso, protocolo["particion"]["origenes_prueba"])
+    if type(origen) is not date or not inicio <= origen <= fin:
+        raise ValueError("Usar un origen dentro del período de prueba del protocolo cerrado")
+    seleccion, configuraciones = _seleccion_comprobada(lote, registro, seleccion_id, protocolo, metadatos)
+    return ({p: r["parametros"] for p, r in configuraciones.items()},
+            {p: r["estado"] for p, r in configuraciones.items()},
+            {"seleccion_id": seleccion_id, "huella_contenido": seleccion["huella_contenido"], **metadatos})
+
+
+def ejecutar_prueba(ventas: FuenteExperimento, registro: RegistroEjecuciones, importacion_id: str,
+                     seleccion_id: str, protocolo: dict, ejecutor: Callable,
+                     trabajadores: int = 1, progreso=None, metadatos: dict | None = None) -> dict:
+    lote = _preparar(ventas, importacion_id, protocolo)
+    contexto = _contexto(lote, ejecutor, trabajadores, metadatos or {})
+    seleccion, configuraciones = _seleccion_comprobada(lote, registro, seleccion_id, protocolo, metadatos or {})
     tareas = _tareas(lote, protocolo, "prueba")
     for tarea in tareas:
         elegida = configuraciones[tarea["producto_id"]]

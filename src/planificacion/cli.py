@@ -21,8 +21,9 @@ from .infraestructura.escenarios import leer_escenario, leer_plan
 from .infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
 from .aplicacion.planificacion import planificar
 from .configuracion import recetario_configurado, recurso_json
-from .dominio.pronosticos import Persistencia
-from .aplicacion.experimento import ejecutar_seleccion, ejecutar_prueba
+from .dominio.pronosticos import Persistencia, ReferenciaSemanal
+from .aplicacion.experimento import ejecutar_seleccion, ejecutar_prueba, configuracion_planificacion
+from .infraestructura.random_forest import RandomForest
 from .infraestructura.entorno import capturar_codigo, capturar_entorno
 from .infraestructura.motor_experimento import ejecutar_tareas
 from .infraestructura.exportacion import exportar_evaluacion
@@ -86,7 +87,8 @@ def main(argv: list[str] | None = None) -> int:
     planificacion.add_argument("--base", type=Path, default=Path("datos/prototipo.sqlite3"))
     planificacion.add_argument("--importacion", required=True)
     planificacion.add_argument("--origen", type=fecha_argumento, required=True)
-    planificacion.add_argument("--metodo", choices=["persistencia"], default="persistencia")
+    planificacion.add_argument("--metodo", choices=["persistencia", "semanal", "random_forest"], default="persistencia")
+    planificacion.add_argument("--seleccion", help="Selección cerrada requerida por Random Forest")
     planificacion.add_argument("--escenario", type=Path, required=True)
     planificacion.add_argument("--recetario", type=Path)
     for nombre, ayuda in (("seleccionar-modelos", "Conservar la selección por validación"),
@@ -153,9 +155,19 @@ def main(argv: list[str] | None = None) -> int:
         elif args.comando == "listar-ejecuciones":
             salida = {"ejecuciones": SQLiteEjecuciones(args.base).listar()}
         elif args.comando == "planificar":
-            salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), Persistencia(),
+            referencia = None
+            metodo = Persistencia() if args.metodo == "persistencia" else ReferenciaSemanal()
+            if args.metodo == "random_forest":
+                if not args.seleccion:
+                    raise ValueError("Random Forest requiere --seleccion con una ejecución cerrada")
+                configuraciones, estados, referencia = configuracion_planificacion(
+                    SQLiteVentas(args.base), SQLiteEjecuciones(args.base), args.importacion, args.seleccion,
+                    recurso_json("protocolo_tp3_v1.json"), args.origen,
+                    {"entorno": capturar_entorno(), "codigo": capturar_codigo()})
+                metodo = RandomForest(configuraciones, estados)
+            salida = planificar(SQLiteVentas(args.base), SQLiteEjecuciones(args.base), metodo,
                                  recetario_configurado(args.recetario), args.importacion, args.origen,
-                                 leer_escenario(args.escenario))
+                                 leer_escenario(args.escenario), referencia_seleccion=referencia)
         elif args.comando in ("seleccionar-modelos", "evaluar-modelos"):
             opciones = {"ventas": SQLiteVentas(args.base), "registro": SQLiteEjecuciones(args.base),
                        "importacion_id": args.importacion, "protocolo": recurso_json("protocolo_tp3_v1.json"),
