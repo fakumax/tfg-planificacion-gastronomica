@@ -80,6 +80,41 @@ acreditan independencia.
 Las recetas son modeladas y el inventario y las reposiciones son sintéticos.
 No se midieron ahorros ni beneficios operativos en un establecimiento.
 
+## Recorrido funcional e instalación
+
+Se comprobaron por HTTP las consultas de ventas, recetas y disponibilidad; los
+tres métodos generaron 49 cantidades para el origen de demostración. El
+escenario inicial produjo 37 alertas, coherentes con sus existencias sintéticas.
+Se revisaron los desgloses de los 38 insumos de cada uno de los tres planes.
+
+Una revisión con existencias suficientes quedó sin alertas y conservó el
+antecedente. Una reposición tardía mantuvo el primer déficit. El origen no
+disponible y la selección anterior incompatible fueron rechazados sin guardar
+planes parciales. La copia en un destino existente también se rechazó.
+
+El respaldo y la restauración conservaron las 33 ejecuciones de la base de
+ensayo, incluidas las anteriores. La base habitual permaneció intacta. Esta
+comprobación corresponde a un recorrido local y secuencial.
+
+Se instaló el paquete desde el árbol de Git y las versiones fijadas en un
+entorno nuevo, fuera del repositorio. La reproducción del plan RF produjo
+idénticos resultados, huella de entrada y huella de contenido en otro ID de
+ejecución.
+
+| Operación observada | Segundos |
+| --- | ---: |
+| Selección por validación, cuatro procesos | 374,20 |
+| Evaluación de prueba, cuatro procesos | 272,94 |
+| Instalación en el entorno nuevo | 200,30 |
+| Plan RF en la instalación aislada | 8,19 |
+| Respaldo integral por HTTP | 338,25 |
+| Restauración por HTTP | 70,55 |
+
+Son mediciones de este equipo durante la comprobación, con otras tareas
+locales. El respaldo y la restauración incluyen controles de integridad; sus
+carpetas estaban en una unidad sincronizada. No constituyen un ensayo de carga
+ni garantizan tiempos de respuesta en otras instalaciones.
+
 ## Reproducción
 
 Seguir [la instalación](INSTALACION.md), [la preparación de datos](DATOS.md) y

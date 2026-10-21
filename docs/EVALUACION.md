@@ -8,6 +8,11 @@ de precisión con las ventas observadas.
 
 ## Orden de ejecución
 
+Completar la selección y la prueba antes de abrir la interfaz sobre esa misma
+base. Los comandos experimentales y la aplicación no coordinan una cola común
+de trabajos. Para mantener abierta otra sesión, usar una copia diferente y
+conservar el respaldo previo.
+
 Importar primero los originales según el manual y reemplazar `IMPORTACION`:
 
 ```powershell

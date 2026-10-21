@@ -19,6 +19,11 @@ No se midieron ahorros ni beneficios de una operación gastronómica real.
 
 ## Aplicación local
 
+No hay una cola compartida entre los comandos experimentales y el servidor.
+Evitar escrituras simultáneas sobre la misma base durante selección, evaluación,
+actualización y respaldo. Un rechazo de la base no autoriza a descartar datos o
+sobrescribir una copia existente; completar la operación y volver a intentarlo.
+
 El cliente utiliza la última importación de la base elegida al iniciar. No ofrece
 todavía un selector de base en pantalla. La instalación se ha comprobado en
 Windows; las instrucciones para otros sistemas no equivalen a pruebas realizadas
