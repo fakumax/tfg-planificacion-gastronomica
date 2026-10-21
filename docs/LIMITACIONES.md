@@ -17,15 +17,6 @@ con pocos casos se marcan exploratorias. Los horizontes solapados y el análisis
 por bloques no acreditan independencia estadística ni intervalos de confianza.
 No se midieron ahorros ni beneficios de una operación gastronómica real.
 
-## Incidencias conocidas
-
-- El estado del ingrediente se conserva en el recurso completo del recetario y
-  se muestra en React, pero no se proyecta todavía en todos los registros
-  normalizados e instantáneas de dominio.
-
-Estas incidencias requieren correcciones y pruebas de regresión específicas.
-No se consideran resueltas por el hecho de que las pruebas actuales pasen.
-
 ## Aplicación local
 
 El cliente utiliza la última importación de la base elegida al iniciar. No ofrece

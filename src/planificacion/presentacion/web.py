@@ -22,7 +22,7 @@ from .consultas import preparar_grafico, explicar_metricas, casos_presentados
 from ..configuracion import recetario_configurado, recurso_json
 from ..dominio.balance import EntradaPrevista, Escenario, Existencia
 from ..dominio.pronosticos import Persistencia, ReferenciaSemanal
-from ..dominio.recetas import decimal_no_negativo, texto
+from ..dominio.recetas import decimal_no_negativo, texto, recetarios_compatibles
 from ..dominio.serializacion import convertir, normalizar
 from ..infraestructura.catalogo_base import estado_base
 from ..infraestructura.csv_ventas import preparar_ventas
@@ -76,6 +76,8 @@ def mostrar_resultado(registro):
         elegido = st.selectbox('Insumo para consultar', orden, key=f"detalle_{registro['ejecucion_id']}",
             format_func=lambda i: f"{insumos[i]} · faltante" if i in con_alerta else insumos[i])
         detalle = detallar_insumo(registro, elegido)
+        st.caption('Estado del insumo: ' +
+                   (detalle['insumo'].get('estado_stock') or 'Sin registrar en esta ejecución'))
         if detalle['alerta']:
             st.write(f"Primera insuficiencia: {detalle['alerta']['primera_fecha']} · "
                      f"Déficit: {detalle['alerta']['deficit_inicial']} {detalle['alerta']['unidad']}")
@@ -158,6 +160,7 @@ def recetas():
     nombres = {i.insumo_id: i for i in recetario.insumos}
     st.write(f"Rendimiento: {receta.rendimiento} unidad(es)")
     tabla([{**asdict(l), "insumo": nombres[l.insumo_id].nombre,
+            "estado_stock": nombres[l.insumo_id].estado_stock,
             "control_de_stock": nombres[l.insumo_id].control_stock} for l in receta.lineas])
     modelo = recurso_json('recetario_modelado_v1.json')
     ficha = next(r for r in modelo['recetas'] if r['producto_id']==receta.producto_id)
@@ -217,7 +220,7 @@ def planificacion(base, identidad, ejecuciones):
         if e['tipo'] == 'planificacion':
             r = SQLiteEjecuciones(base).recuperar(e['id'])
             if (r['contexto'].get('importacion_id') == identidad
-                    and r['entradas']['recetario'] == normalizar(recetario)):
+                    and recetarios_compatibles(r['entradas']['recetario'], normalizar(recetario))):
                 candidatas.append(e['id'])
     previa = st.selectbox('Escenario de partida', [None, *candidatas], key='revision',
         format_func=lambda i: 'Escenario nuevo' if i is None else f'Revisar {i[:12]}')

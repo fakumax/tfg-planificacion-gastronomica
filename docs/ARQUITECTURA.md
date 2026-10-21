@@ -35,7 +35,10 @@ sobrescriben cuando cambia el escenario.
 | `presentacion/consultas.py` | Gráfico con cortes y causas de exclusión o métrica no calculable | Implementado |
 
 El esquema físico conserva las seis tablas previas junto con las dieciocho del
-modelo: 24 tablas y una vista. Las anteriores mantienen procedencia e instantáneas
+modelo y la relación de estados por recetario: 25 tablas y una vista.
+`EstadoInsumo` vincula el estado utilizable con la versión exacta del recetario;
+si una instantánea anterior no lo registraba, se conserva como no informado.
+Las anteriores mantienen procedencia e instantáneas
 identificadas por huellas; las nuevas agregan las claves, relaciones y consultas del
 diseño. La verificación contrasta la proyección contra una reconstrucción en memoria.
 No se presenta esta extensión de compatibilidad como una copia física exacta del DER.

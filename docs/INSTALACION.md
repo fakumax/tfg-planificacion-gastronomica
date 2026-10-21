@@ -103,7 +103,11 @@ Cerrar el servidor y elegir un destino nuevo para la copia:
 ```
 
 La actualización conserva los registros anteriores y revierte la transacción si
-falla. Una selección de modelos con un núcleo o entorno diferente debe volver a
+falla. El esquema 3 conserva el estado del insumo por recetario y permite leer las
+bases anteriores de versiones 1 y 2. Los estados que no se guardaron en un
+registro anterior permanecen sin informar; no se completan con la ficha actual.
+Las revisiones conservan el antecedente y guardan una ejecución nueva.
+Una selección de modelos con un núcleo o entorno diferente debe volver a
 registrarse siguiendo [EVALUACION.md](EVALUACION.md).
 
 Los servidores están limitados al equipo local. No se implementaron cuentas,

@@ -49,7 +49,7 @@ class ModeloRelacionalTests(unittest.TestCase):
             self.assertEqual(c.execute('SELECT count(*) FROM BalanceDiario').fetchone()[0], 14)
             self.assertEqual(c.execute('SELECT primera_fecha FROM Alerta').fetchone()[0], '2025-01-01')
             self.assertEqual(c.execute('PRAGMA foreign_key_check').fetchall(), [])
-            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 2)
+            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 3)
 
     def test_error_de_integridad_revierte_toda_la_actualizacion(self):
         self.guardar_balance()
@@ -111,7 +111,7 @@ class ModeloRelacionalTests(unittest.TestCase):
         nueva.mkdir()
         base, identidad = importacion_sintetica(nueva)
         with closing(sqlite3.connect(base)) as c:
-            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 2)
+            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0], 3)
             self.assertEqual(c.execute('SELECT id_preparacion FROM Preparacion').fetchall(), [(identidad,)])
 
     def test_guarda_candidatas_y_metricas_de_validacion_con_sus_configuraciones(self):

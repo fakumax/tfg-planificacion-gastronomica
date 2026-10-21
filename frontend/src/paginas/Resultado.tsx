@@ -89,6 +89,11 @@ export default function Resultado({ registro }: { registro: Registro }) {
             ) : (
               detalle.datos && (
                 <>
+                  <p>
+                    Estado del insumo:{" "}
+                    {detalle.datos.insumo.estado_stock ||
+                      "Sin registrar en esta ejecución"}
+                  </p>
                   <Tabla
                     filas={detalle.datos.balance}
                     columnas={[

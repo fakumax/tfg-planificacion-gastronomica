@@ -29,6 +29,7 @@ class Insumo:
     nombre: str
     unidad: str
     control_stock: bool
+    estado_stock: str | None = None
 
 
 @dataclass(frozen=True)
@@ -65,9 +66,12 @@ def interpretar_recetario(modelo: dict, sha256: str) -> Recetario:
     for i in modelo["ingredientes"]:
         if not isinstance(i, dict) or type(i.get("control_stock")) is not bool:
             raise ValueError("Insumo sin control de stock explícito")
+        estado = i.get("estado_stock")
+        if estado is not None:
+            estado = texto(estado, "estado del insumo")
         insumos.append(Insumo(texto(i.get("ingrediente_id"), "insumo"),
                               texto(i.get("nombre"), "nombre"),
-                              texto(i.get("unidad"), "unidad"), i["control_stock"]))
+                              texto(i.get("unidad"), "unidad"), i["control_stock"], estado))
     por_insumo = {i.insumo_id: i for i in insumos}
     if len(por_insumo) != len(insumos):
         raise ValueError("Insumo duplicado")
@@ -97,6 +101,17 @@ def interpretar_recetario(modelo: dict, sha256: str) -> Recetario:
     if len({r.producto_id for r in recetas}) != len(recetas):
         raise ValueError("Producto duplicado en recetario")
     return Recetario(version, sha256, tuple(insumos), tuple(recetas))
+
+
+def recetarios_compatibles(guardado: dict, actual: dict) -> bool:
+    """Admitir el campo añadido sin atribuir un estado a registros anteriores."""
+    comparable = {**actual, "insumos": [dict(i) for i in actual["insumos"]]}
+    anteriores = {i["insumo_id"]: i for i in guardado["insumos"]}
+    for insumo in comparable["insumos"]:
+        anterior = anteriores.get(insumo["insumo_id"])
+        if anterior is not None and "estado_stock" not in anterior:
+            insumo.pop("estado_stock", None)
+    return guardado == comparable
 
 
 def calcular_consumos(recetario: Recetario, demanda: dict) -> dict[str, Decimal]:

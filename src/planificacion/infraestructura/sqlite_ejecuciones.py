@@ -41,7 +41,7 @@ class SQLiteEjecuciones:
             if version == 0:
                 c.execute("PRAGMA user_version = 1")
             c.execute("BEGIN IMMEDIATE")
-            if version == 2:
+            if version in (2, 3):
                 actualizar_en_conexion(c)
             c.execute("INSERT INTO ejecuciones VALUES (?, ?, ?, ?, ?, ?, ?)",
                       (identidad, datetime.now(timezone.utc).isoformat(timespec="microseconds"),
@@ -50,7 +50,7 @@ class SQLiteEjecuciones:
                        hashlib.sha256(cuerpo.encode("utf-8")).hexdigest(), cuerpo))
             if version == 0:
                 actualizar_en_conexion(c)
-            elif version == 2:
+            elif version in (2, 3):
                 proyectar_ejecucion(c, c.execute('SELECT * FROM ejecuciones WHERE id=?', (identidad,)).fetchone())
         return identidad
 

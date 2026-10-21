@@ -224,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.comando == "actualizar-base":
             copia = copiar_base(args.base, args.respaldo)
             actualizar_modelo(args.base)
-            salida = {"estado": "correcto", "version_esquema": 2, "respaldo": copia}
+            salida = {"estado": "correcto", "version_esquema": 3, "respaldo": copia}
         else:
             salida = SQLiteEjecuciones(args.base).recuperar(args.ejecucion)
     except (OSError, ValueError, TypeError, LookupError, sqlite3.Error) as exc:

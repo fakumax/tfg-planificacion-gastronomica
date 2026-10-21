@@ -7,7 +7,7 @@ from typing import Protocol
 
 from .. import __version__
 from ..dominio.balance import CantidadPlanificada, Escenario, calcular_balance
-from ..dominio.recetas import Recetario
+from ..dominio.recetas import Recetario, recetarios_compatibles
 from ..dominio.serializacion import canonico, normalizar
 
 
@@ -28,7 +28,7 @@ def ejecutar_balance(repo: RegistroEjecuciones, recetario: Recetario,
     if ejecucion_previa_id is not None:
         previa = repo.recuperar(ejecucion_previa_id)
         if (previa['tipo'] not in ('balance', 'planificacion')
-                or previa['entradas']['recetario'] != normalizar(recetario)
+                or not recetarios_compatibles(previa['entradas']['recetario'], normalizar(recetario))
                 or previa['entradas']['fechas'] != normalizar(fechas)
                 or previa.get('contexto', {}).get('importacion_id') != contexto.get('importacion_id')):
             raise ValueError('El antecedente debe conservar importación, recetario y fechas del escenario')

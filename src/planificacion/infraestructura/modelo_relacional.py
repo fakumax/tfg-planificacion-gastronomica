@@ -45,6 +45,11 @@ CREATE TABLE IF NOT EXISTS Insumo (
 CREATE TABLE IF NOT EXISTS Recetario (
  id_recetario TEXT PRIMARY KEY, version TEXT NOT NULL, sha256 TEXT NOT NULL,
  tipo TEXT NOT NULL CHECK(tipo='modelado'), contenido_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS EstadoInsumo (
+ id_recetario TEXT NOT NULL REFERENCES Recetario,
+ id_insumo TEXT NOT NULL REFERENCES Insumo,
+ estado_stock TEXT CHECK(estado_stock IS NULL OR length(trim(estado_stock))>0),
+ PRIMARY KEY(id_recetario,id_insumo));
 CREATE TABLE IF NOT EXISTS Receta (
  id_receta TEXT PRIMARY KEY, id_recetario TEXT NOT NULL REFERENCES Recetario,
  id_producto TEXT REFERENCES Producto, codigo_producto TEXT NOT NULL,
@@ -184,6 +189,7 @@ def _escenario(c, entradas, resultado, catalogo, previo):
     _insertar_inmutable(c, 'Recetario', 'id_recetario', (rid, r['version'], r['sha256'], 'modelado', canonico(r)))
     for i in r['insumos']:
         _insertar_inmutable(c, 'Insumo', 'id_insumo', (i['insumo_id'], i['nombre'], i['unidad'], int(i['control_stock'])))
+    _estados_insumos(c, rid, r)
     for receta in r['recetas']:
         rcid = clave(rid, receta['producto_id'])
         if c.execute('SELECT 1 FROM Receta WHERE id_receta=?', (rcid,)).fetchone():
@@ -213,6 +219,17 @@ def _escenario(c, entradas, resultado, catalogo, previo):
             raise ValueError('Entrada anterior al comienzo del escenario')
         _insertar(c, 'Entrada', (clave(sid, eid), sid, e['insumo_id'], eid, e['fecha'], e['cantidad'], e['unidad']))
     return sid
+
+
+def _estados_insumos(c, rid, recetario):
+    for insumo in recetario['insumos']:
+        valores = (rid, insumo['insumo_id'], insumo.get('estado_stock'))
+        actual = c.execute('SELECT * FROM EstadoInsumo WHERE id_recetario=? AND id_insumo=?',
+                           valores[:2]).fetchone()
+        if actual is None:
+            _insertar(c, 'EstadoInsumo', valores)
+        elif tuple(actual) != valores:
+            raise ValueError('Integridad: estado del insumo diferente en el mismo recetario')
 
 
 def proyectar_ejecucion(c, fila):
@@ -346,7 +363,9 @@ def actualizar_en_conexion(c):
     if 'ejecuciones' in tablas:
         for fila in c.execute('SELECT * FROM ejecuciones ORDER BY fecha_utc,id').fetchall():
             proyectar_ejecucion(c, fila)
-    c.execute('PRAGMA user_version=2')
+    for fila in c.execute('SELECT id_recetario,contenido_json FROM Recetario').fetchall():
+        _estados_insumos(c, fila['id_recetario'], json.loads(fila['contenido_json']))
+    c.execute('PRAGMA user_version=3')
 
 
 def actualizar_modelo(ruta: Path):
@@ -361,7 +380,8 @@ def actualizar_modelo(ruta: Path):
 
 def verificar_modelo(c):
     """Contrastar las entidades con las instantáneas sin escribir en el origen."""
-    if c.execute('PRAGMA user_version').fetchone()[0] != 2:
+    version = c.execute('PRAGMA user_version').fetchone()[0]
+    if version not in (2, 3):
         return
     with closing(sqlite3.connect(':memory:', isolation_level=None)) as esperado:
         esperado.row_factory = sqlite3.Row
@@ -380,7 +400,7 @@ def verificar_modelo(c):
         actualizar_en_conexion(esperado)
         for fila in esperado.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall():
             nombre = fila[0]
-            if nombre in anteriores:
+            if nombre in anteriores or (version == 2 and nombre == 'EstadoInsumo'):
                 continue
             columnas = len(esperado.execute(f'PRAGMA table_info({nombre})').fetchall())
             orden = ','.join(str(n) for n in range(1, columnas+1))

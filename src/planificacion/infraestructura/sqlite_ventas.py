@@ -84,6 +84,8 @@ class SQLiteVentas:
             c.execute("BEGIN IMMEDIATE")
             if c.execute("SELECT id FROM importaciones_ventas WHERE id = ?", (identidad,)).fetchone():
                 return identidad
+            if version in (2, 3):
+                actualizar_en_conexion(c)
             c.execute("INSERT INTO importaciones_ventas VALUES (?, ?, ?, ?, ?, ?)",
                       (identidad, lote.protocolo_id, lote.protocolo_sha256,
                        lote.version_preparacion, __version__,
@@ -103,7 +105,7 @@ class SQLiteVentas:
                             json.dumps(d.filas_origen), d.archivo_origen) for d in lote.diarias))
             if version == 0:
                 actualizar_en_conexion(c)
-            elif version == 2:
+            elif version in (2, 3):
                 proyectar_importacion(c, identidad)
         return identidad
 
