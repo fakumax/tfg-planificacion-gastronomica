@@ -27,7 +27,7 @@ Para una revisión específica de la API:
 | Pronósticos | Corte temporal, ejemplos conocidos, rezagos por fecha y mínimos de entrenamiento. |
 | Evaluación | Selección previa a prueba, casos comunes, métricas no disponibles y sensibilidad. |
 | Historial | Ejecuciones inmutables, revisiones vinculadas y detalle de consumo. |
-| Persistencia | Proyección relacional, actualización, copias y restauración en destinos nuevos. |
+| Persistencia | Proyección relacional, definición de la vista de alertas, actualización, copias y restauración en destinos nuevos. |
 | API | Validación de solicitudes, consultas sin escritura, origen web y cantidades como texto. |
 | Cliente | Fechas, diferencia entre hueco y cero, decimales y mensajes de faltantes. |
 

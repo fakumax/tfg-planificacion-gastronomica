@@ -87,6 +87,25 @@ class ModeloRelacionalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'integridad relacional'):
             verificar_base(self.base)
 
+    def test_control_rechaza_vista_de_alertas_vacia_con_las_mismas_columnas(self):
+        self.guardar_balance()
+        actualizar_modelo(self.base)
+        with closing(sqlite3.connect(self.base)) as c, c:
+            c.execute('DROP VIEW Alerta')
+            c.execute('''CREATE VIEW Alerta AS
+                SELECT id_ejecucion,id_insumo,fecha AS primera_fecha,
+                       0 AS deficit_primera_fecha,unidad
+                FROM BalanceDiario WHERE 0''')
+        with self.assertRaisesRegex(ValueError, 'integridad relacional.*Alerta'):
+            verificar_base(self.base)
+
+    def test_control_rechaza_vista_ausente_aunque_no_haya_ejecuciones(self):
+        actualizar_modelo(self.base)
+        with closing(sqlite3.connect(self.base)) as c, c:
+            c.execute('DROP VIEW Alerta')
+        with self.assertRaisesRegex(ValueError, 'integridad relacional.*Alerta'):
+            verificar_base(self.base)
+
     def test_base_nueva_guarda_el_modelo_completo_desde_la_primera_importacion(self):
         nueva = self.raiz / 'nueva'
         nueva.mkdir()

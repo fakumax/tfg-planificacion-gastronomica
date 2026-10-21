@@ -28,9 +28,6 @@ No se midieron ahorros ni beneficios de una operación gastronómica real.
 - La API y los comandos comprueban la selección cerrada antes de utilizar Random
   Forest. El servicio de persistencia todavía necesita validar esa referencia
   también ante llamadas directas ajenas a esos puntos de entrada.
-- El control de integridad compara las tablas normalizadas con las instantáneas,
-  pero no verifica la definición SQL de la vista de alertas. Esa comprobación
-  permanece pendiente.
 
 Estas incidencias requieren correcciones y pruebas de regresión específicas.
 No se consideran resueltas por el hecho de que las pruebas actuales pasen.
