@@ -83,6 +83,7 @@ por separado con los datos y el protocolo registrados.
 - [Arquitectura](docs/ARQUITECTURA.md).
 - [Balance de insumos](docs/BALANCE.md).
 - [Evaluación de pronósticos](docs/EVALUACION.md).
+- [Validación y resultados medidos](docs/VALIDACION.md).
 - [Copias y recuperación](docs/RECUPERACION.md).
 - [Pruebas](docs/PRUEBAS_ACEPTACION.md).
 - [Limitaciones conocidas](docs/LIMITACIONES.md).

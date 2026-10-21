@@ -1,7 +1,7 @@
 # Evaluación del protocolo cerrado
 
 El protocolo experimental conserva el calendario,
-las variables, la grilla, la semilla, las exclusiones ni los umbrales. La elección
+las variables, la grilla, la semilla, las exclusiones y los umbrales. La elección
 de hasta cuatro procesos por producto es una decisión de ejecución; cada bosque
 usa un solo trabajo. Las pruebas sintéticas verifican reglas y no son una medida
 de precisión con las ventas observadas.
