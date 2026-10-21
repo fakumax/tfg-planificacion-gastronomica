@@ -36,6 +36,10 @@ huellas del código. La prueba exige la misma importación, entorno y núcleo
 numérico de la selección. Si cambian, se registra primero una nueva selección.
 El estado prefijado por validación insuficiente se informa expresamente.
 
+Antes de guardar una planificación, consulta o evaluación, se comprueban la
+existencia y huella de la selección, su importación, entorno, núcleo y parámetros.
+Persistencia y referencia semanal no admiten una selección de Random Forest.
+
 ## Uso en planificación
 
 ```powershell

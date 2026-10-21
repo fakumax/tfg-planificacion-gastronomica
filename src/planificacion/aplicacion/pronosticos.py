@@ -7,6 +7,7 @@ from ..dominio.pronosticos import Pronosticador
 from ..dominio.serializacion import normalizar
 from ..dominio.temporal import ejemplos_entrenamiento
 from .balance import RegistroEjecuciones
+from .referencias import comprobar_referencias
 from .ventas import LecturaVentas, consultar_ventas
 
 
@@ -63,5 +64,6 @@ def consultar_pronostico(ventas: LecturaVentas, registro: RegistroEjecuciones, m
     contenido = normalizar({'tipo': 'consulta_pronostico', 'version_codigo': __version__, 'contexto': contexto,
         'entradas': {'consulta': consulta}, 'resultado': {'producto_id': producto_id,
         'completo': all(p['disponible'] for p in filas), 'pronosticos': filas}})
+    comprobar_referencias(registro, contenido)
     identidad = registro.guardar(contenido)
     return registro.recuperar(identidad)

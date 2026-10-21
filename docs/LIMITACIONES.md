@@ -25,9 +25,6 @@ No se midieron ahorros ni beneficios de una operación gastronómica real.
 - El estado del ingrediente se conserva en el recurso completo del recetario y
   se muestra en React, pero no se proyecta todavía en todos los registros
   normalizados e instantáneas de dominio.
-- La API y los comandos comprueban la selección cerrada antes de utilizar Random
-  Forest. El servicio de persistencia todavía necesita validar esa referencia
-  también ante llamadas directas ajenas a esos puntos de entrada.
 
 Estas incidencias requieren correcciones y pruebas de regresión específicas.
 No se consideran resueltas por el hecho de que las pruebas actuales pasen.

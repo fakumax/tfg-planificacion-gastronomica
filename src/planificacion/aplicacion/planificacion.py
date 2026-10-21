@@ -5,6 +5,7 @@ from typing import Protocol
 
 from .balance import RegistroEjecuciones, ejecutar_balance
 from .ventas import LecturaVentas, consultar_ventas
+from .referencias import comprobar_referencias
 from ..dominio.balance import CantidadPlanificada, Escenario
 from ..dominio.pronosticos import Pronosticador
 from ..dominio.recetas import Recetario
@@ -42,5 +43,6 @@ def planificar(ventas: LecturaPlanificacion, ejecuciones: RegistroEjecuciones,
                 "origen": origen, "historico": historico, "pronosticos": pronosticos}
     if referencia_seleccion is not None:
         contexto["seleccion_modelos"] = referencia_seleccion
+    comprobar_referencias(ejecuciones, {'tipo': 'planificacion', 'contexto': contexto})
     return ejecutar_balance(ejecuciones, recetario, tuple(plan), escenario, fechas,
                             contexto=contexto, tipo="planificacion", ejecucion_previa_id=ejecucion_previa_id)

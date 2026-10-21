@@ -7,6 +7,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from ..dominio.serializacion import canonico, normalizar
+from ..aplicacion.referencias import comprobar_referencias
 from .base_sqlite import conexion_sqlite
 from .modelo_relacional import actualizar_en_conexion, proyectar_ejecucion
 
@@ -29,6 +30,7 @@ class SQLiteEjecuciones:
 
     def guardar(self, contenido: dict) -> str:
         contenido = normalizar(contenido)
+        comprobar_referencias(self, contenido)
         cuerpo = canonico(contenido)
         entrada = canonico({"entradas": contenido["entradas"],
                             "contexto": contenido.get("contexto", {})})
