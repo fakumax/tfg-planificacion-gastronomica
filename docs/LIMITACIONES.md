@@ -19,9 +19,6 @@ No se midieron ahorros ni beneficios de una operación gastronómica real.
 
 ## Incidencias conocidas
 
-- La edición de cantidades en la interfaz anterior de Streamlit puede convertir
-  decimales a punto flotante. Para cantidades que requieren precisión exacta,
-  usar la interfaz React, que las transporta como texto.
 - El estado del ingrediente se conserva en el recurso completo del recetario y
   se muestra en React, pero no se proyecta todavía en todos los registros
   normalizados e instantáneas de dominio.

@@ -2,12 +2,19 @@ import os
 import runpy
 import tempfile
 import unittest
+from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
 
 from streamlit.testing.v1 import AppTest
 
 from planificacion.infraestructura.sqlite_ejecuciones import SQLiteEjecuciones
+from planificacion.infraestructura.sqlite_ventas import SQLiteVentas
+from planificacion.aplicacion.planificacion import planificar
+from planificacion.configuracion import recetario_configurado
+from planificacion.dominio.balance import Escenario, Existencia, EntradaPrevista
+from planificacion.dominio.pronosticos import Persistencia
 from soporte_experimentos import importacion_sintetica
 
 APP = Path(__file__).resolve().parents[1] / "app.py"
@@ -101,6 +108,33 @@ class InterfazTests(unittest.TestCase):
         self.assertEqual(len(filas), 2)
         segunda = SQLiteEjecuciones(self.base).recuperar(filas[-1]['id'])
         self.assertEqual(segunda['contexto']['revision']['ejecucion_previa_id'], original)
+
+    def test_revision_sin_editar_conserva_decimales_exactos_y_primera_alerta(self):
+        _, identidad = importacion_sintetica(self.raiz)
+        repo = SQLiteEjecuciones(self.base)
+        recetario = recetario_configurado()
+        escenario = Escenario('Decimales sintéticos', '1', tuple(
+            Existencia(i.insumo_id, Decimal('1109.99999999999999') if i.insumo_id == 'cerdo'
+                       else Decimal(0), i.unidad)
+            for i in recetario.insumos if i.control_stock), (
+                EntradaPrevista('cerdo', date(2025, 11, 4), Decimal('0.10000000000000001'),
+                                'g', 'entrada-sintetica'),))
+        original = planificar(SQLiteVentas(self.base), repo, Persistencia(), recetario,
+            identidad, date(2025, 11, 1), escenario)
+        app = self.app()
+        app.radio(key='pagina').set_value('Planificación').run()
+        app.selectbox(key='revision').set_value(original['ejecucion_id']).run()
+        app.button(key='planificar').click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        self.assertEqual(len(repo.listar()), 2)
+        revision = repo.recuperar(repo.listar()[-1]['id'])
+        self.assertEqual(revision['entradas']['escenario']['existencias'],
+                         original['entradas']['escenario']['existencias'])
+        self.assertEqual(revision['entradas']['escenario']['entradas'],
+                         original['entradas']['escenario']['entradas'])
+        self.assertEqual(revision['resultado']['alertas'], original['resultado']['alertas'])
+        self.assertEqual(repo.recuperar(original['ejecucion_id']), original)
 
     def test_un_proceso_de_modelos_no_arranca_la_pantalla(self):
         with patch("planificacion.presentacion.web.mostrar_app") as mostrar:

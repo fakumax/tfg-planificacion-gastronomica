@@ -91,7 +91,8 @@ La implementación anterior sigue disponible:
 ```
 
 Abrir `http://127.0.0.1:8501`, o ejecutar `iniciar_app.bat` en Windows.
-Consultar [las limitaciones de esa interfaz](LIMITACIONES.md).
+Las cantidades de existencias y reposiciones se editan como texto decimal con
+punto, para preservar su precisión al recuperar y revisar un escenario.
 
 ## Actualizar una base anterior
 

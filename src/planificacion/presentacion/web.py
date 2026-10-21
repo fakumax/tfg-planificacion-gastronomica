@@ -238,21 +238,23 @@ def planificacion(base, identidad, ejecuciones):
     existencias_previas = {e.insumo_id: e.cantidad for e in borrador.existencias} if borrador else {}
     st.subheader("Existencias iniciales")
     stock = st.data_editor(pd.DataFrame([{"insumo_id": i.insumo_id, "insumo": i.nombre,
-        "cantidad": float(existencias_previas.get(i.insumo_id, 0)), "unidad": i.unidad} for i in controlados.values()]), key=f"stock_{sufijo}",
+        "cantidad": str(existencias_previas.get(i.insumo_id, 0)), "unidad": i.unidad} for i in controlados.values()]), key=f"stock_{sufijo}",
         disabled=["insumo_id", "insumo", "unidad"], hide_index=True, width="stretch",
-        column_config={"cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0)})
+        column_config={"cantidad": st.column_config.TextColumn("Cantidad", required=True,
+            help="Cantidad exacta; usá punto como separador decimal.")})
     st.subheader("Entradas previstas")
     filas_previas = [{'entrada_id': e.entrada_id, 'insumo_id': e.insumo_id,
-                      'fecha': pd.Timestamp(e.fecha), 'cantidad': float(e.cantidad)} for e in borrador.entradas] if borrador else []
+                      'fecha': pd.Timestamp(e.fecha), 'cantidad': str(e.cantidad)} for e in borrador.entradas] if borrador else []
     entradas_iniciales = pd.DataFrame(filas_previas) if filas_previas else pd.DataFrame({
         'entrada_id': pd.Series(dtype=str), "insumo_id": pd.Series(dtype=str),
-        "fecha": pd.Series(dtype="datetime64[ns]"), "cantidad": pd.Series(dtype=float)})
+        "fecha": pd.Series(dtype="datetime64[ns]"), "cantidad": pd.Series(dtype=str)})
     entradas = st.data_editor(entradas_iniciales,
         key=f"entradas_{sufijo}", num_rows="dynamic", hide_index=True, width="stretch",
         column_config={'entrada_id': st.column_config.TextColumn('ID de reposición', required=True),
                        "insumo_id": st.column_config.SelectboxColumn("Insumo", options=list(controlados), required=True),
                        "fecha": st.column_config.DateColumn("Fecha", required=True),
-                       "cantidad": st.column_config.NumberColumn("Cantidad", min_value=0.0, required=True)})
+                       "cantidad": st.column_config.TextColumn("Cantidad", required=True,
+                           help="Cantidad exacta; usá punto como separador decimal.")})
     st.caption("Usá un ID distinto para cada entrega y la unidad de cada insumo. Las entradas se suman antes del consumo del mismo día.")
     if st.button("Calcular y guardar", key="planificar", type="primary"):
         existencias = tuple(Existencia(r["insumo_id"], decimal_no_negativo(r["cantidad"], "existencia"), r["unidad"])
